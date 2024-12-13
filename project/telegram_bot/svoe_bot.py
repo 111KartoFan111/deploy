@@ -5,156 +5,197 @@ import sqlite3
 # Установите подключение к базе данных
 DB_FILE = '../database/app.db'
 
+# Этапы для добавления новости и выбора новости для редактирования/удаления
+TITLE, CONTENT, EDIT_ID, DELETE_ID = range(4)
+# Функция для подключения к базе данных
 def get_db_connection():
     conn = sqlite3.connect(DB_FILE)
-    conn.row_factory = sqlite3.Row
+    conn.row_factory = sqlite3.Row  # Получать строки как словари
     return conn
 
-# Пароль для администратора
-ADMIN_PASSWORD = "2222"  # Замените на реальный пароль администратора
-
-# Глобальная переменная для отслеживания статуса авторизации пользователя
-authorized_users = {}
-# Глобальная переменная для отслеживания состояния ввода новостей
-news_input_state = {}
-
-# Обработчик команды /start
+# Команда /start
 async def start(update: Update, context: CallbackContext) -> None:
-    await update.message.reply_text("Здравствуйте! Пожалуйста, введите пароль для авторизации.")
+    await update.message.reply_text("Здравствуйте! Используйте команды:\n/applications, /news, /add_news, /edit_news, /delete_news.")
 
-# Обработчик пароля
-async def password_handler(update: Update, context: CallbackContext) -> None:
-    user_id = update.message.from_user.id
-
-    # Проверка, находится ли пользователь в процессе ввода новости
-    if user_id in news_input_state:
-        await text_handler(update, context)
-        return
-
-    password = update.message.text.strip()
-    if password == ADMIN_PASSWORD:
-        authorized_users[user_id] = True
-        await update.message.reply_text("Вы авторизованы как администратор. Теперь используйте команды /applications или /news.")
-    else:
-        await update.message.reply_text("Неверный пароль. Попробуйте снова.")
-
-# Обработчик команды /applications — показывает все заявки
+# Команда /applications — показывает все заявки
 async def applications(update: Update, context: CallbackContext) -> None:
-    user_id = update.message.from_user.id
-
-    # Проверка, авторизован ли пользователь
-    if user_id not in authorized_users or not authorized_users[user_id]:
-        await update.message.reply_text("Для доступа к этой команде вам нужно ввести пароль администратора.")
-        return
-
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT id, name, phone, comment, processed FROM applications")
     applications = cur.fetchall()
     conn.close()
 
-    # Формирование списка заявок
     message = "Заявки:\n\n"
     for app in applications:
         message += f"ID: {app['id']}, Имя: {app['name']}, Телефон: {app['phone']}, Комментарий: {app['comment']}, Обработано: {app['processed']}\n"
 
     await update.message.reply_text(message)
 
-# Обработчик команды /news — показывает все новости
+# Команда /news — показывает все новости
 async def news(update: Update, context: CallbackContext) -> None:
-    user_id = update.message.from_user.id
-
-    # Проверка, авторизован ли пользователь
-    if user_id not in authorized_users or not authorized_users[user_id]:
-        await update.message.reply_text("Для доступа к этой команде вам нужно ввести пароль администратора.")
-        return
-
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT id, title, content, date FROM news ORDER BY date DESC")
     news_items = cur.fetchall()
     conn.close()
 
-    # Формирование списка новостей
     message = "Новости:\n\n"
     for news_item in news_items:
         message += f"ID: {news_item['id']}, Заголовок: {news_item['title']}, Дата: {news_item['date']}\n{news_item['content']}\n\n"
 
     await update.message.reply_text(message)
 
-# Обработчик команды /add_news — начало ввода новости
-async def add_news(update: Update, context: CallbackContext) -> None:
-    user_id = update.message.from_user.id
+# Начало процесса добавления новости
+async def add_news_start(update: Update, context: CallbackContext) -> int:
+    await update.message.reply_text("Пожалуйста, введите заголовок новости.")
+    return TITLE
 
-    # Проверка, авторизован ли пользователь
-    if user_id not in authorized_users or not authorized_users[user_id]:
-        await update.message.reply_text("Для доступа к этой команде вам нужно ввести пароль администратора.")
-        return
+# Получение заголовка новости
+async def get_title(update: Update, context: CallbackContext) -> int:
+    context.user_data['title'] = update.message.text  # Сохраняем заголовок
+    await update.message.reply_text("Теперь введите текст новости.")
+    return CONTENT
 
-    # Установка состояния ввода заголовка
-    news_input_state[user_id] = {'step': 'title', 'title': '', 'content': ''}
-    await update.message.reply_text("Введите заголовок новости (многострочный ввод). Когда закончите, отправьте \"/done\".")
+# Получение текста новости и сохранение новости в базе данных
+async def get_content(update: Update, context: CallbackContext) -> int:
+    title = context.user_data['title']
+    content = update.message.text
 
-# Обработчик текстовых сообщений для многострочного ввода
-async def text_handler(update: Update, context: CallbackContext) -> None:
-    user_id = update.message.from_user.id
+    # Добавление новости в базу данных
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO news (title, content) VALUES (?, ?)", (title, content))
+    conn.commit()
+    conn.close()
 
-    # Проверка, находится ли пользователь в процессе ввода новости
-    if user_id in news_input_state:
-        state = news_input_state[user_id]
+    await update.message.reply_text(f"Новость добавлена!\nЗаголовок: {title}\nТекст: {content}")
+    return ConversationHandler.END
 
-        if state['step'] == 'title':
-            # Добавление строки в заголовок
-            state['title'] += update.message.text + '\n'
-        elif state['step'] == 'content':
-            # Добавление строки в основной текст
-            state['content'] += update.message.text + '\n'
+# Команда /edit_news — редактирование новости
+async def edit_news_start(update: Update, context: CallbackContext) -> int:
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id, title FROM news ORDER BY date DESC")
+    news_items = cur.fetchall()
+    conn.close()
 
-        await update.message.reply_text("Текст добавлен. Если завершили ввод, отправьте \"/done\".")
+    if not news_items:
+        await update.message.reply_text("Нет новостей для редактирования.")
+        return ConversationHandler.END
 
-# Обработчик команды /done — завершение ввода текущего этапа
-async def done(update: Update, context: CallbackContext) -> None:
-    user_id = update.message.from_user.id
+    message = "Выберите новость для редактирования:\n\n"
+    for news_item in news_items:
+        message += f"ID: {news_item['id']}, Заголовок: {news_item['title']}\n"
 
-    # Проверка, находится ли пользователь в процессе ввода новости
-    if user_id in news_input_state:
-        state = news_input_state[user_id]
+    await update.message.reply_text(message)
+    return EDIT_ID
 
-        if state['step'] == 'title':
-            # Завершение ввода заголовка
-            state['step'] = 'content'
-            await update.message.reply_text("Заголовок сохранен. Теперь введите текст новости (многострочный ввод). Когда закончите, отправьте \"/done\".")
-        elif state['step'] == 'content':
-            # Завершение ввода текста новости
-            title = state['title'].strip()
-            content = state['content'].strip()
+# Получение ID новости для редактирования
+async def get_news_id_for_edit(update: Update, context: CallbackContext) -> int:
+    try:
+        news_id = int(update.message.text)  # Преобразуем в ID
+        context.user_data['edit_id'] = news_id  # Сохраняем ID новости
+        await update.message.reply_text("Теперь введите новый текст новости.")
+        return CONTENT
+    except ValueError:
+        await update.message.reply_text("Пожалуйста, введите корректный ID новости.")
+        return EDIT_ID
 
-            conn = get_db_connection()
-            cur = conn.cursor()
-            cur.execute(
-                """
-                INSERT INTO news (title, content, date)
-                VALUES (?, ?, datetime('now'))
-                """,
-                (title, content)
-            )
-            conn.commit()
-            conn.close()
+# Обработка нового текста новости и обновление в базе данных
+async def edit_news_content(update: Update, context: CallbackContext) -> int:
+    news_id = context.user_data['edit_id']
+    new_content = update.message.text
 
-            del news_input_state[user_id]  # Очистка состояния ввода
+    # Редактирование новости в базе данных
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE news SET content = ? WHERE id = ?", (new_content, news_id))
+    conn.commit()
+    conn.close()
 
-            await update.message.reply_text(f"Новость успешно добавлена!\n\nЗаголовок:\n{title}\n\nТекст:\n{content}")
+    await update.message.reply_text(f"Новость с ID {news_id} успешно отредактирована.")
+    return ConversationHandler.END
 
-# Главная функция, вызываемая
+# Команда /delete_news — удаление новости
+async def delete_news(update: Update, context: CallbackContext) -> int:
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id, title FROM news ORDER BY date DESC")
+    news_items = cur.fetchall()
+    conn.close()
+
+    if not news_items:
+        await update.message.reply_text("Нет новостей для удаления.")
+        return ConversationHandler.END
+
+    message = "Выберите новость для удаления:\n\n"
+    for news_item in news_items:
+        message += f"ID: {news_item['id']}, Заголовок: {news_item['title']}\n"
+
+    await update.message.reply_text(message)
+    return DELETE_ID
+
+# Получение ID новости для удаления
+async def get_news_id_for_delete(update: Update, context: CallbackContext) -> None:
+    try:
+        news_id = int(update.message.text)  # Преобразуем в ID
+        # Удаление новости из базы данных
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM news WHERE id = ?", (news_id,))
+        conn.commit()
+        conn.close()
+
+        await update.message.reply_text(f"Новость с ID {news_id} успешно удалена.")
+    except ValueError:
+        await update.message.reply_text("Пожалуйста, введите корректный ID новости.")
+
+# Обработчик для отмены процесса
+async def cancel(update: Update, context: CallbackContext) -> int:
+    await update.message.reply_text("Процесс отменен.")
+    return ConversationHandler.END
+
+# Главная функция, запускающая бота
 def main():
     application = Application.builder().token('7705461504:AAHNbj_cY44V10LQS9LXWdNgw3wLBQ1qr2U').build()
+
+    # Настройка ConversationHandler для добавления новости
+    add_news_handler = ConversationHandler(
+        entry_points=[CommandHandler('add_news', add_news_start)],
+        states={
+            TITLE: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_title)],
+            CONTENT: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_content)],
+        },
+        fallbacks=[CommandHandler('cancel', cancel)],
+    )
+
+    # Настройка ConversationHandler для редактирования новости
+    edit_news_handler = ConversationHandler(
+        entry_points=[CommandHandler('edit_news', edit_news_start)],
+        states={
+            EDIT_ID: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_news_id_for_edit)],
+            CONTENT: [MessageHandler(filters.TEXT & ~filters.COMMAND, edit_news_content)],
+        },
+        fallbacks=[CommandHandler('cancel', cancel)],
+    )
+
+    # Настройка ConversationHandler для удаления новости
+    delete_news_handler = ConversationHandler(
+        entry_points=[CommandHandler('delete_news', delete_news)],
+        states={
+            DELETE_ID: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_news_id_for_delete)],
+        },
+        fallbacks=[CommandHandler('cancel', cancel)],
+    )
+
+    # Регистрация обработчиков команд
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, password_handler))
+    application.add_handler(add_news_handler)
+    application.add_handler(edit_news_handler)
+    application.add_handler(delete_news_handler)
     application.add_handler(CommandHandler("applications", applications))
     application.add_handler(CommandHandler("news", news))
-    application.add_handler(CommandHandler("add_news", add_news))
-    application.add_handler(CommandHandler("done", done))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler))
+
     application.run_polling()
 
 if __name__ == '__main__':
