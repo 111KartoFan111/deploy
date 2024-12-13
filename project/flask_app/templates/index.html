@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Профессиональные IT и бухгалтерские решения для вашего бизнеса.">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <title>SVOE PROIZVODSTVO</title>
+    <link rel="Icon" href="{{ url_for('static', filename='img/logo.svg') }}">
+</head>
+<body>
+
+<!-- Шапка сайта -->
+<header>
+    <div class="logo">
+        <img src="{{ url_for('static', filename='img/Frame169-1.svg') }}" alt="Logo">
+    </div>
+    <div class="hamburger-menu" onclick="toggleMenu()">☰</div>
+    <nav class="nav-bar">
+        <a href="/">Главная</a>
+        <a href="about">О нас</a>
+        <a href="price">Цены</a>
+        <a href="news">Новости</a>
+        <a href="#contact" class="contact-link">Связаться с нами</a>
+    </nav>
+  </header>
+  <script>
+    function toggleMenu() {
+        const navBar = document.querySelector('.nav-bar');
+        navBar.classList.toggle('active');
+    }
+  </script>
+<!-- Основной блок с текстом -->
+<section class="main-block">
+    <div class="text">
+        <h1>Профессиональные IT и бухгалтерские решения для вашего бизнеса</h1>
+        <p>Мы предоставляем качественные услуги для оптимизации вашего бизнеса. Наши специалисты помогут вам достичь новых высот в мире технологий и бухгалтерии.</p>
+        <a href="price">Перейти к ценам</a>
+    </div>
+    <div class="image">
+        <img class="frame-169-1" src="{{ url_for('static', filename='img/ddd.svg') }}" alt="Logo">
+    </div>
+</section>
+
+<!-- Наши услуги -->
+<section class="services-block">
+    <h2>Наши услуги</h2>
+    <div class="service-group">
+        <h3>УСЛУГИ ПРОГРАММИСТОВ</h3>
+        <p>Создаем программное обеспечение, адаптируем системы, улучшаем функционал и проводим обновления для стабильной работы.</p>
+    </div>
+    <div class="service-group">
+        <h3>Бухгалтерские услуги</h3>
+        <p>Подготавливаем декларации, ведем бухгалтерский учет, рассчитываем зарплату и решаем все бухгалтерские вопросы.</p>
+    </div>
+</section>
+
+
+<!-- Форма отправки заявки -->
+<section class="contact-form" id="contact">
+    <h2>Оставить заявку</h2>
+    <div class="form-container">
+        <form class="form" method="POST" action="/submit_application">
+            <input type="text" name="name" placeholder="Ваше имя" required>
+            <input type="tel" name="phone" placeholder="Ваш телефон" required>
+            <textarea name="comment" placeholder="Комментарий" required></textarea>
+            <button type="submit" class="btn-submit">Оставить заявку</button>
+        </form>
+        <div class="form-image">
+            <img class="frame-169-1" src="{{ url_for('static', filename='img/hh.svg') }}" alt="Logo">
+        </div>
+    </div>
+</section>
+
+
+
+<!-- Блок новостей -->
+<section class="news-block">
+    <h2>Новости</h2>
+    <p>Новости, предупреждения о плановых работах, обновление тарифов, вся важная информация.</p>
+    <div class="news-items">
+        <!-- Перебор новостей -->
+        {% for news_item in data %}
+        <div class="news-item">
+            <h3>{{ news_item[0] }}</h3> <!-- Заголовок новости -->
+            <p>{{ news_item[2] }}</p>  <!-- Содержание новости -->
+        </div>
+        {% endfor %}
+    </div>
+    <a href="news" class="btn-news">Все новости</a>
+</section>
+
+
+<!-- Подвал -->
+<footer>
+    <div class="footer-left">
+        <div class="logo">
+          <img class="frame-169-1" src="{{ url_for('static', filename='img/Frame169-1.svg') }}" alt="Логотип">
+        </div>
+    </div>
+    <div id="contact" class="contact-info">
+        <p>Остались вопросы? Позвоните нам:</p>
+        <p><a href="tel:+77007553871">+7 700 755 3871</a></p>
+        <a href="https://www.instagram.com/sp_program_kz/">
+          <img src="{{ url_for('static', filename='img/instagram-line.svg') }}" alt="Instagram Icon">sp_program_kz
+        </a>
+        <a href="https://wa.me/77007553871">
+            <img src="{{ url_for('static', filename='img/whatsapp-line.svg') }}" alt="WhatsApp Icon" /> +7 700 755 3871
+        </a>
+    </div>
+</footer>
+
+
+</body>
+</html>
