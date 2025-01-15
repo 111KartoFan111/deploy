@@ -73,6 +73,14 @@ footer .contact-info img {
   flex-direction: column;
   justify-content: space-between;
 }
+pre {
+  white-space: pre-wrap; /* Перенос текста, если он не вмещается */
+  word-wrap: break-word; /* Перенос длинных слов */
+  overflow-wrap: break-word; /* Дополнительное свойство для переноса */
+  font-family: inherit; /* Наследование шрифта, чтобы текст выглядел гармонично */
+  padding: 10px; /* Отступы внутри контейнера */
+}
+
 
 .news-item h3 {
   color: #173d7a;
