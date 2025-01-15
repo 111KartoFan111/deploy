@@ -83,7 +83,7 @@
         {% for news_item in data %}
         <div class="news-item">
             <h3>{{ news_item[0] }}</h3> <!-- Заголовок новости -->
-            <p>{{ news_item[2] }}</p>  <!-- Содержание новости -->
+            <pre>{{ news_item[2] }}</pre>  <!-- Содержание новости -->
         </div>
         {% endfor %}
     </div>
