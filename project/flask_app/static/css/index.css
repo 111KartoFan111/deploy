@@ -22,6 +22,14 @@ header {
   justify-content: space-between;
   align-items: center;
 }
+pre {
+  white-space: pre-wrap; /* Перенос текста, если он не вмещается */
+  word-wrap: break-word; /* Перенос длинных слов */
+  overflow-wrap: break-word; /* Дополнительное свойство для переноса */
+  font-family: inherit; /* Наследование шрифта, чтобы текст выглядел гармонично */
+  padding: 10px; /* Отступы внутри контейнера */
+}
+
 
 /* Responsive Navigation */
 @media (max-width: 768px) {
