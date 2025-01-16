@@ -1,0 +1,238 @@
+/* Общие стили для всех страниц */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Блок команды */
+.team-block {
+  padding: 50px 10px; /* Уменьшено расстояние */
+  background-color: #f4f4f4;
+  text-align: center;
+}
+
+.team-block h2 {
+  color: #0d6efd;
+  margin-bottom: 15px; /* Уменьшено расстояние */
+  font-size: 1.6rem; /* Уменьшен размер шрифта */
+  text-transform: uppercase;
+}
+
+.team-container {
+  display: flex;
+  justify-content: center;
+  gap: 15px; /* Уменьшено расстояние */
+  flex-wrap: wrap;
+}
+
+.team-member {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 220px; /* Уменьшен размер */
+}
+
+.team-member img {
+  width: 100%;
+  max-width: 180px; /* Уменьшен размер */
+  border-radius: 10px;
+  margin-bottom: 8px; /* Уменьшено расстояние */
+}
+
+.team-member p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #212529;
+  text-align: center;
+}
+
+/* Блок "Почему мы?" */
+.why-us {
+  padding: 20px 10px; /* Уменьшено расстояние */
+  background-color: #ffffff;
+  text-align: center;
+}
+
+.why-us h2 {
+  font-size: 1.6rem; /* Уменьшен размер шрифта */
+  color: #0d6efd;
+  margin-bottom: 15px; /* Уменьшено расстояние */
+}
+
+.why-us-content p {
+  margin: 8px 0; /* Уменьшено расстояние */
+  line-height: 1.5;
+  text-align: left;
+}
+
+/* Подвал */
+footer {
+  background-color: #212529;
+  color: white;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+footer .contact-info a {
+  color: white;
+  text-decoration: none;
+  margin: 0 10px;
+}
+footer .contact-info img {
+  width: 20px;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+/* Мобильные стили */
+@media (max-width: 768px) {
+  .team-block {
+    padding: 40px 10px; /* Уменьшено расстояние */
+  }
+
+  .team-block h2 {
+    font-size: 1.6rem; /* Уменьшен размер шрифта */
+    margin-bottom: 10px; /* Уменьшено расстояние */
+  }
+
+  .team-container {
+    gap: 10px; /* Уменьшено расстояние */
+  }
+
+  .team-member {
+    width: 200px; /* Уменьшен размер */
+  }
+
+  .why-us {
+    margin-top: 30%;
+    padding: 20px 10px; /* Уменьшено расстояние */
+  }
+
+  .why-us h2 {
+    font-size: 1.6rem; /* Уменьшен размер шрифта */
+    margin-bottom: 10px; /* Уменьшено расстояние */
+  }
+
+  .why-us-content p {
+    margin: 5px 0; /* Уменьшено расстояние */
+  }
+
+  footer {
+    padding: 15px 10px; /* Уменьшено расстояние */
+  }
+}
+/* Скрываем гамбургер на больших экранах и показываем меню */
+.hamburger-menu {
+  display: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+section.team-block{
+  margin-top: 10%;
+  padding-top: 15px !important;
+}
+/* На мобильных разрешениях показываем гамбургер и скрываем навигацию по умолчанию */
+@media (max-width: 768px) {
+  .hamburger-menu {
+    display: block;
+    margin-right: 5%;
+}
+section.team-block{
+  width: 100%;
+  margin-top: 20%;
+  padding-top: 15px !important;
+}
+section.why-us{width:100%;}
+
+.nav-bar {
+    display: none; /* Скрыто по умолчанию */
+    flex-direction: column;
+    background: #fff;
+    position: absolute;
+    top: 60px; /* Или сколько нужно ниже шапки */
+    left: -15px; /* Сдвигаем меню на 15px влево */
+    width: 100%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nav-bar a {
+    display: block;
+    margin: 10px 0;
+    color: #180d5b;
+    background: none;
+    border: none;
+}
+
+/* Когда будет активен класс active, показываем меню */
+.nav-bar.active {
+    display: flex;
+}
+
+@media (max-width: 440px) {
+  .team-container{
+    flex-direction: column;
+    align-content: center;
+    width: 100%;
+  }
+  .team-block {
+    padding: 40px 10px; /* Уменьшено расстояние */
+    margin-top: 20%;
+  }
+
+  .team-block h2 {
+    font-size: 1.6rem; /* Уменьшен размер шрифта */
+    margin-bottom: 10px; /* Уменьшено расстояние */
+  }
+
+  .team-container {
+    gap: 10px; /* Уменьшено расстояние */
+  }
+
+  .team-member {
+    width: 200px; /* Уменьшен размер */
+  }
+
+  .why-us {
+    margin-top: 40px;
+    padding: 20px 10px; /* Уменьшено расстояние */
+  }
+
+  .why-us h2 {
+    font-size: 1.6rem; /* Уменьшен размер шрифта */
+    margin-bottom: 10px; /* Уменьшено расстояние */
+  }
+
+  .why-us-content p {
+    margin: 5px 0; /* Уменьшено расстояние */
+  }
+
+  footer {
+    padding: 15px 10px; /* Уменьшено расстояние */
+  }
+  }
+}
+
+.iframe1{
+    margin-top: 0px;
+    margin-left: 450px;
+    width: 1000px;
+    height: 1000px;
+}
+
+.pdf-selector label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    width: 180px;
+    margin-left: 850px;
+}
+
+.pdf-selector input[type="radio"] {
+    margin-right: 5px;
+    cursor: pointer;
+}
