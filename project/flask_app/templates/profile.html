@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Личный кабинет{% endblock %}
+
+{% block extra_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/news.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+<script>
+    function toggleSection(sectionId) {
+        const sections = document.querySelectorAll('.profile-section');
+        sections.forEach(section => section.style.display = 'none');
+        document.getElementById(sectionId).style.display = 'block';
+    }
+</script>
+<script src="{{ url_for('static', filename='js/header.js') }}"></script>
+<script src="{{ url_for('static', filename='js/user.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<main>
+    <section class="navigation-section">
+        <label>
+            <input type="radio" name="toggle" onclick="toggleSection('links-section')" checked class="radio-input">
+            Приложения
+        </label>
+        <label>
+            <input type="radio" name="toggle" onclick="toggleSection('notifications-section')"class="radio-input">
+            Уведомления
+        </label>
+        <label>
+            <input type="radio" name="toggle" onclick="toggleSection('subscriptions-section')"class="radio-input">
+            Подписки
+        </label>
+        <label>
+            <input type="radio" name="toggle" onclick="toggleSection('profile-section')"class="radio-input">
+            Мой данные
+        </label>
+    </section>
+
+
+<section id="profile-section" class="profile-section" style="display: none;">
+    <h2>Ваши данные</h2>
+        <ul>
+            <td>ФИО:{{current_user.username}}</td>
+            <td>Почта:{{current_user.email}}</td>
+            <td>Телефон:{{current_user.phone}}</td>
+        </ul>
+</section>
+
+<!-- Секция для ссылок -->
+<section id="links-section" class="profile-section" style="display: block;">
+    <h2>Ваши базы 1С</h2>
+    {% if user_links %}
+        <ul>
+            {% for link, app_name in user_links %}
+                <li data-link="{{ link }}">
+                    <strong class="app-name">{{ app_name }}</strong>
+                    <a href="{{ link }}" target="_blank">{{ link }}</a>
+                    <button onclick="startEdit(this)">Редактировать</button>
+                    <div class="edit-form" style="display: none;">
+                        <input type="text" value="{{ app_name }}" />
+                        <button onclick="saveEdit(this)">Сохранить</button>
+                        <button onclick="cancelEdit(this)">Отмена</button>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>У вас пока нет сохраненных ссылок.</p>
+    {% endif %}
+</section>
+
+<section id="notifications-section" class="profile-section" style="display: none;">
+    <h2>Уведомления</h2>
+    {% if notifications %}
+        <ul>
+            {% for notification in notifications %}
+                <li>
+                    <strong>{{ notification.sent_at }}:</strong> {{ notification.message }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>У вас пока нет уведомлений.</p>
+    {% endif %}
+</section>
+
+
+    <!-- Раздел для подписок -->
+    <section id="subscriptions-section" class="profile-section" style="display: none;">
+        <h2>Подписки</h2>
+        {% if subscriptions %}
+            <ul>
+                {% for subscription in subscriptions %}
+                    <li>
+                        <strong>{{ subscription.service_name }}</strong><br>
+                        Цена: {{ subscription.price }}<br>
+                        С {{ subscription.start_date }} по {{ subscription.end_date }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>У вас пока нет активных подписок.</p>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}

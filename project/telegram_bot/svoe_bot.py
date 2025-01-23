@@ -1,12 +1,14 @@
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
+import os
 import sqlite3
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext, ConversationHandler
 
-# Установите подключение к базе данных
-DB_FILE = '../database/app.db'
+# Установите путь к базе данных с учетом местоположения скрипта
+DB_FILE = os.path.join(os.path.dirname(__file__), '..', 'database', 'db.sqlite3')
 
 # Этапы для добавления новости и выбора новости для редактирования/удаления
 TITLE, CONTENT, EDIT_ID, DELETE_ID = range(4)
+
 # Функция для подключения к базе данных
 def get_db_connection():
     conn = sqlite3.connect(DB_FILE)
@@ -157,7 +159,7 @@ async def cancel(update: Update, context: CallbackContext) -> int:
 
 # Главная функция, запускающая бота
 def main():
-    application = Application.builder().token('7705461504:AAHNbj_cY44V10LQS9LXWdNgw3wLBQ1qr2U').build()
+    application = Application.builder().token('7914597565:AAF8fSKolDiY_QlJs3sEoovYWxUAzJnIn-U').build()
 
     # Настройка ConversationHandler для добавления новости
     add_news_handler = ConversationHandler(

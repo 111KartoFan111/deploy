@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Приложения{% endblock %}
+
+{% block extra_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/solutions.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="pdf-container">
+    <center><h1>Приложения</h1></center>
+    <div class="solutions">
+        <div class="span1">
+            <h2><a href="/solutions/ea">Бухгалтерия для Казахстана</a></h2>
+            <h3>Предназначена для автоматизации бухгалтерского и налогового учета<br> на предприятиях Республики Казахстан, в соответствии с действующим<br> законодательством...</h3>
+            <div class="images">
+                <img src="{{ url_for('static', filename='img/accounting1.jpg') }}" alt="Image 1">
+                <img src="{{ url_for('static', filename='img/accounting2.jpg') }}" alt="Image 2">
+                <img src="{{ url_for('static', filename='img/accounting3.jpg') }}" alt="Image 3">
+            </div>
+            {% if current_user.is_authenticated %}
+                <a {% if current_user.role == 'admin' %} href="/admin"{% else %} onclick="sendApplication('Бухгалтерия для Казахстана')"{% endif %}><button>Подать заявку</button></a>
+            {% else %}
+                <a onclick="openModal('login-modal')"><button>Подать заявку</button></a>
+            {% endif %}
+        </div>
+        <div class="span1">
+            <h2><a href="/solutions/ea">Зарплата и управление персоналом для Казахстана</a></h2>
+            <h3>Решение «1С:Зарплата и управление персоналом 8 для Казахстана»<br> предназначено для реализации кадровой политики предприятия и<br> автоматизации денежных расчетов с персоналом...</h3>
+            <div class="images">
+                <img src="{{ url_for('static', filename='img/hr1.jpg') }}" alt="Image 1">
+                <img src="{{ url_for('static', filename='img/hr2.jpg') }}" alt="Image 2">
+                <img src="{{ url_for('static', filename='img/hr3.jpg') }}" alt="Image 3">
+            </div>
+            {% if current_user.is_authenticated %}
+                <a {% if current_user.role == 'admin' %} href="/admin"{% else %} onclick="sendApplication('Зарплата и управление персоналом для Казахстана')"{% endif %}><button>Подать заявку</button></a>
+            {% else %}
+                <a onclick="openModal('login-modal')"><button>Подать заявку</button></a>
+            {% endif %}
+        </div>
+        <div class="span1">
+            <h2><a href="/solutions/ea">1С:Розница 8 для Казахстана</a></h2>
+            <h3>«1С:Розница для Казахстана 8» — универсальное решение для<br> управления розничной торговлей. Полностью автоматизирует все<br> основные бизнес-процессы как отдельного магазина, так и крупной<br> розничной сети...</h3>
+            <div class="images">
+                <img src="{{ url_for('static', filename='img/retail1.jpg') }}" alt="Image 1">
+                <img src="{{ url_for('static', filename='img/retail2.jpg') }}" alt="Image 2">
+                <img src="{{ url_for('static', filename='img/retail3.jpg') }}" alt="Image 3">
+            </div>
+            {% if current_user.is_authenticated %}
+                <a {% if current_user.role == 'admin' %} href="/admin"{% else %} onclick="sendApplication('1С:Розница 8 для Казахстана')"{% endif %}><button>Подать заявку</button></a>
+            {% else %}
+                <a onclick="openModal('login-modal')"><button>Подать заявку</button></a>
+            {% endif %}
+        </div>
+        <div class="span1">
+            <h2><a href="/solutions/ea">Управление нашей фирмой для Казахстана</a></h2>
+            <h3>Комплексное решение для учета и управления<br> основными процессами небольшого предприятия...</h3>
+            <div class="images">
+                <img src="{{ url_for('static', filename='img/firm1.jpg') }}" alt="Image 1">
+                <img src="{{ url_for('static', filename='img/firm2.jpg') }}" alt="Image 2">
+                <img src="{{ url_for('static', filename='img/firm3.jpg') }}" alt="Image 3">
+            </div>
+            {% if current_user.is_authenticated %}
+                <a {% if current_user.role == 'admin' %} href="/admin"{% else %} onclick="sendApplication('Управление нашей фирмой для Казахстана')"{% endif %}><button>Подать заявку</button></a>
+            {% else %}
+                <a onclick="openModal('login-modal')"><button>Подать заявку</button></a>
+            {% endif %}
+        </div>
+        <div class="span1">
+            <h2><a href="/solutions/ea">Аптека для Казахстана</a></h2>
+            <h3>Автоматизация розничной торговли лекарственными препаратами<br> и сопутствующими товарами в аптеках...</h3>
+            <div class="images">
+                <img src="{{ url_for('static', filename='img/pharmacy1.jpg') }}" alt="Image 1">
+                <img src="{{ url_for('static', filename='img/pharmacy2.jpg') }}" alt="Image 2">
+                <img src="{{ url_for('static', filename='img/pharmacy3.jpg') }}" alt="Image 3">
+            </div>
+            {% if current_user.is_authenticated %}
+                <a {% if current_user.role == 'admin' %} href="/admin"{% else %} onclick="sendApplication('Аптека для Казахстанаы')"{% endif %}><button>Подать заявку</button></a>
+            {% else %}
+                <a onclick="openModal('login-modal')"><button>Подать заявку</button></a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<script>
+    function sendApplication(serviceName) {
+        const userName = prompt("Введите ваше имя:");
+        const userPhone = prompt("Введите ваш телефон:");
+        if (userName && userPhone) {
+            fetch('/submit_applications', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: userName,
+                    phone: userPhone,
+                    comment: `Заявка на: ${serviceName}`
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Заявка успешно отправлена!');
+                } else {
+                    alert('Ошибка при отправке заявки.');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                alert('Ошибка при отправке заявки.');
+            });
+        } else {
+            alert('Имя и телефон обязательны для заполнения!');
+        }
+    }
+</script>
+{% endblock %}

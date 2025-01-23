@@ -7,7 +7,10 @@ body {
   color: #333;
   overflow-x: hidden;
 }
-
+/*Убрать полосу прокрутки для всей страницы*/
+::-webkit-scrollbar {
+  width: 0;
+}
 /* Шапка */
 header {
   background-color: #ffffff;
@@ -453,7 +456,6 @@ footer .contact-info img {
   cursor: pointer;
 }
 
-/* На мобильных разрешениях показываем гамбургер и скрываем навигацию по умолчанию */
 /* На мобильных разрешениях показываем гамбургер и скрываем навигацию по умолчанию */
 @media (max-width: 768px) {
   .hamburger-menu {

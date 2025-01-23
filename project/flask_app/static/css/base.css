@@ -1,0 +1,102 @@
+/* Общие стили */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+    overflow-x: hidden;
+  }
+  
+  /* Шапка */
+  header {
+    background-color: #ffffff;
+    color: #212529;
+    padding: 15px 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  pre {
+    white-space: pre-wrap; /* Перенос текста, если он не вмещается */
+    word-wrap: break-word; /* Перенос длинных слов */
+    overflow-wrap: break-word; /* Дополнительное свойство для переноса */
+    font-family: inherit; /* Наследование шрифта, чтобы текст выглядел гармонично */
+    padding: 10px; /* Отступы внутри контейнера */
+  }
+  
+  
+  /* Responsive Navigation */
+  @media (max-width: 768px) {
+    header {
+        padding: 10px;
+    }
+    .nav-bar {
+        display: none;
+        margin-right: 5%;
+    }
+    .header-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .logo {
+        margin-bottom: 10px;
+    }
+    .hamburger-menu {
+        display: block;
+        cursor: pointer;
+        font-size: 24px;
+    }
+    .nav-bar.active {
+        display: block;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 90%;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        text-align: center;
+    }
+    .nav-bar.active a {
+        display: block;
+        margin: 10px 0;
+    }
+  }
+
+  /* Кнопка "Связаться с нами" */
+  .contact-link {
+    margin-left: auto;
+  }
+
+  .logo img {
+    width: 100%;
+    max-width: 120px;
+  }
+
+  header a {
+    color: white;
+    text-decoration: none;
+    margin: 0 15px;
+    padding: 10px 15px;
+    background-color: #180d5b;
+    border: 1px solid #22417a;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: all 0.3s;
+  }
+  header a:hover {
+    background-color: #22417a;
+    color: #ffffff;
+  }
+  header a:active {
+    background-color: #0098FF;
+    color: white;
+    border: 1px solid #ffffff;
+  }
