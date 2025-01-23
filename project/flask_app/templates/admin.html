@@ -1,0 +1,392 @@
+{% extends 'base.html' %}
+
+{% block title %}Админ панель{% endblock %}
+
+{% block extra_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="application">
+    <h1>Админ панель</h1>
+    <!-- Radio buttons to switch between functions -->
+    <form method="POST">
+        <label>
+            <input type="radio" name="function" value="news" onclick="showNewsForm()"> Новости
+        </label>
+        <label>
+            <input type="radio" name="function" value="applications" onclick="showApplicationsForm()"> Заявки
+        </label>
+        <label>
+            <input type="radio" name="function" value="links" onclick="showLinkForm()"> Пользователи
+        </label>
+        <label>
+            <input type="radio" name="function" value="subscriptions" onclick="showSubscriptionsForm()"> Подписки
+        </label>
+    </form>
+
+    <!-- Add News Form -->
+    <div id="newsForm" style="display: none;">
+        <h2>Добавить новость</h2>
+        <form method="POST">
+            <input type="hidden" name="action" value="add_news">
+            <label>Заголовок:</label>
+            <input type="text" name="title" required>
+            <label>Содержание:</label>
+            <textarea name="content" required></textarea>
+            <button type="submit">Добавить новость</button>
+        </form>
+        <h2>Редактировать новости</h2>
+        <form method="POST">
+            <input type="hidden" name="action" value="edit_news">
+            <label>Новость:</label>
+            <select name="news_id">
+                {% for news in news_list %}
+                    <option value="{{ news.id }}">{{ news.title }}</option>
+                {% endfor %}
+            </select>
+            <label>Заголовок:</label>
+            <input type="text" name="title" required>
+            <label>Содержание:</label>
+            <textarea name="content" required></textarea>
+            <button type="submit">Редактировать новость</button>
+        </form>
+        <h2>Удалить новость</h2>
+        <form method="POST">
+            <input type="hidden" name="action" value="delete_news">
+            <label>Новость:</label>
+            <select name="news_id">
+                {% for news in news_list %}
+                    <option value="{{ news.id }}">{{ news.title }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Удалить новость</button>
+        </form>
+    </div>
+
+    <!-- Applications Form -->
+    <div id="applicationsForm" style="display: none;">
+        <h2>Обработать заявки</h2>
+        <form method="POST">
+            <input type="hidden" name="action" value="process_application">
+            <label>Заявка:</label>
+            <select name="app_id">
+                {% for app in applications %}
+                    <option value="{{ app.id }}">{{ app.name }}</option>
+                {% endfor %}
+            </select>
+            <label>Обработано:</label>
+            <select name="processed">
+                <option value="True">Да</option>
+                <option value="False">Нет</option>
+            </select>
+            <label>Комментарий :</label>
+            {% for app in applications %}
+            <pre name="comment">{{app.comment}}</pre>
+            {% endfor %}
+            <button type="submit">Обработать заявку</button>
+        </form>
+    </div>
+
+    <div id="subscriptionsForm" style="display: none;">
+        <h2>Управление подписками</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Пользователь</th>
+                    <th>Сервис</th>
+                    <th>Цена</th>
+                    <th>Дата окончания</th>
+                    <th>Чек</th>
+                    <th>Управление</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for subscription in subscriptions %}
+                <tr>
+                    <td>{{ subscription.user_name }}</td>
+                    <td>{{ subscription.service_name }}</td>
+                    <td>{{subscription.price}}</td>
+                    <td>{{ subscription.end_date }}</td>
+                    <td>
+                        {% if subscription.receipt_path %}
+                            <a href="{{ url_for('static', filename=subscription.receipt_path) }}" target="_blank">Посмотреть чек</a>
+                        {% else %}
+                            Чек не загружен
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form method="POST" action="/approve_subscription">
+                            <input type="hidden" name="subscription_id" value="{{ subscription.subscription_id }}">
+                            <button type="submit">Одобрить</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <h2>Назначить подписку пользователю</h2>
+        <form method="POST" action="/assign_subscription">
+            <label for="user_id">Пользователь:</label>
+            <select name="user_id" id="user_id" required>
+                <option value="" disabled selected>Выберите пользователя</option>
+                {% for user in users %}
+                <option value="{{ user.user_id }}">{{ user.full_name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="service_id">Сервис:</label>
+            <select name="service_id" id="service_id" required onchange="updatePrice()">
+                <option value="" disabled selected>Выберите сервис</option>
+                {% for service in services %}
+                <option value="{{ service.id }}">{{ service.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="period">Период:</label>
+            <select name="period" id="period" required onchange="updateEndDate()">
+                <option value="0">Одноразовый</option>
+                <option value="1">Месячный</option>
+                <option value="6">Полугодовой</option>
+                <option value="12">Годовой</option>
+            </select>
+
+            <label for="price">Цена:</label>
+            <input type="text" id="price" name="price" readonly>
+
+            <label for="start_date">Дата начала:</label>
+            <input type="date" id="start_date" name="start_date" required onchange="updateEndDate()">
+
+            <label for="end_date">Дата окончания:</label>
+            <input type="date" id="end_date" name="end_date" readonly>
+
+            <button type="submit">Назначить подписку</button>
+        </form>
+
+
+        <script>
+            function updateEndDate() {
+                const startDate = document.getElementById('start_date').value;
+                const period = document.getElementById('period').value;
+                const endDateField = document.getElementById('end_date');
+            
+                if (!startDate || !period) {
+                    endDateField.value = '';
+                    return;
+                }
+                const start = new Date(startDate);
+                if (period === "0") { // Одноразовый: +1 день
+                    start.setDate(start.getDate() + 1);
+                } else { // Для периодов: +месяцы
+                    start.setMonth(start.getMonth() + parseInt(period, 10));
+                }
+
+                // Форматируем дату в YYYY-MM-DD
+                const endDate = start.toISOString().split('T')[0];
+                endDateField.value = endDate;
+            }
+
+            async function updatePrice() {
+                const serviceId = document.getElementById('service_id').value;
+                const period = document.getElementById('period').value;
+                if (serviceId && period) {
+                    try {
+                        const response = await fetch(`/get_price?service_id=${serviceId}&period=${period}`);
+                        const data = await response.json();
+                        if (data.success) {
+                            document.getElementById('price').value = `${data.price.toFixed(2)} KZT`;
+                        } else {
+                            document.getElementById('price').value = 'Цена не найдена';
+                            console.error(data.message);
+                        }
+                    } catch (error) {
+                        console.error('Ошибка загрузки цены:', error);
+                        alert('Ошибка при загрузке цены. Попробуйте снова.');
+                    }
+                }
+            }
+        </script>
+
+    </div>
+<!-- Пользователи -->
+    <div id="linkForm" style="display: none;">
+        <h2>Список пользователей</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>ФИО</th>
+                    <th>Email</th>
+                    <th>Роль</th>
+                    <th>Управление</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user['user_id'] }}</td>
+                    <td>{{ user['full_name'] }}</td>
+                    <td>{{ user['email'] }}</td>
+                    <td>
+                        <form method="POST" style="display: inline;">
+                            <input type="hidden" name="action" value="update_role">
+                            <input type="hidden" name="user_id" value="{{ user['user_id'] }}">
+                            <select name="new_role">
+                                <option value="user" {% if user['role'] == 'user' %}selected{% endif %}>Пользователь</option>
+                                <option value="admin" {% if user['role'] == 'admin' %}selected{% endif %}>Администратор</option>
+                            </select>
+                            <button type="submit">Сохранить</button>
+                        </form>
+                    </td>
+                    <td>
+                        <button onclick="showUserLinks({{ user['user_id'] }})">Все ссылки</button>
+                        <button onclick="showAddLinkForm({{ user['user_id'] }})">Добавить ссылку</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+            <!-- Отображение ссылок -->
+            <div id="addLinkForm" style="display: none;">
+                <h2>Добавить ссылку</h2>
+                <form id="newLinkForm">
+                    <input type="hidden" name="user_id" id="userIdInput">
+                    <label for="linkName">Название:</label>
+                    <input type="text" id="linkName" name="link_name" required>
+                    <label for="linkUrl">URL:</label>
+                    <input type="url" id="linkUrl" name="link_url" required>
+                    <button type="submit">Добавить</button>
+                </form>
+                <button onclick="hideAddLinkForm()">Отмена</button>
+            </div>
+
+<!-- Ссылки пользователя -->
+<div id="userLinks" style="display: none;">
+    <h2>Ссылки пользователя</h2>
+    <ul id="userLinksList"></ul>
+    <button onclick="hideUserLinks()">Закрыть</button>
+</div>
+
+
+<script>
+    // Показать ссылки пользователя
+    function showUserLinks(userId) {
+        // Выполнить запрос на сервер для получения ссылок пользователя
+        fetch(`/get_user_links/${userId}`)
+            .then(response => response.json())
+            .then(links => {
+                const userLinksList = document.getElementById("userLinksList");
+                userLinksList.innerHTML = ""; // Очистить предыдущие ссылки
+
+                links.forEach(link => {
+                    const li = document.createElement("li");
+                    li.innerHTML = `
+                        <a href="${link.url}" target="_blank">${link.name}</a>
+                        <button onclick="deleteLink(${link.id})">Удалить</button>
+                    `;
+                    userLinksList.appendChild(li);
+                });
+
+                document.getElementById("userLinks").style.display = "block";
+            })
+            .catch(error => console.error('Error fetching user links:', error));
+    }
+
+    // Скрыть ссылки пользователя
+    function hideUserLinks() {
+        document.getElementById("userLinks").style.display = "none";
+    }
+
+    // Показать форму добавления ссылки
+    function showAddLinkForm(userId) {
+        document.getElementById("userIdInput").value = userId; // Установить userId в форму
+        document.getElementById("addLinkForm").style.display = "block";
+    }
+
+    // Скрыть форму добавления ссылки
+    function hideAddLinkForm() {
+        document.getElementById("addLinkForm").style.display = "none";
+    }
+
+    // Удаление ссылки
+    function deleteLink(linkId) {
+        fetch(`/delete_link/${linkId}`, { method: 'DELETE' })
+            .then(response => {
+                if (response.ok) {
+                    alert("Ссылка удалена!");
+                    location.reload(); // Обновить страницу для получения актуальных данных
+                } else {
+                    alert("Ошибка удаления ссылки");
+                }
+            })
+            .catch(error => console.error('Error deleting link:', error));
+    }
+
+    // Обработка отправки формы добавления ссылки
+    document.getElementById("newLinkForm").addEventListener("submit", function(event) {
+        event.preventDefault(); // Предотвратить стандартное поведение формы
+
+        const formData = new FormData(this);
+        fetch('/add_link', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert("Ссылка добавлена!");
+                    hideAddLinkForm();
+                    location.reload(); // Обновить страницу для получения новых данных
+                } else {
+                    alert("Ошибка добавления ссылки");
+                }
+            })
+            .catch(error => console.error('Error adding link:', error));
+    });
+</script>
+
+
+<!-- Кнопка для отображения формы отправки уведомлений с вложениями -->
+<button onclick="showAttachmentForm()">Отправить уведомление с вложением</button>
+
+<!-- Форма отправки уведомления с вложением -->
+<div id="attachmentForm" style="display: none;">
+    <h2>Отправить уведомление с вложением</h2>
+    <form method="POST" action="/send_notification" enctype="multipart/form-data">
+        <input type="hidden" name="action" value="add_notification_with_attachment">
+        <!-- Выбор пользователя -->
+        <label for="user_id">Пользователь (ID):</label>
+        <select name="user_id" id="user_id" required>
+            {% for user in users %}
+                <option value="{{ user['user_id'] }}">{{ user['full_name'] }}</option>
+            {% endfor %}
+        </select>
+        <br>
+
+        <!-- Сообщение -->
+        <label for="message">Сообщение:</label>
+        <textarea name="message" id="message" ></textarea>
+        <br>
+
+        <!-- Загрузка файла -->
+        <label for="attachment">Вложение:</label>
+        <input type="file" name="attachment" id="attachment" accept=".pdf,.jpg,.jpeg,.png" >
+        <br>
+        <button onclick="attachmentForm()">Закрыть</button>
+        <button type="submit">Отправить</button>
+    </form>
+</div>
+
+<script>
+    function showAttachmentForm() {
+        document.getElementById('attachmentForm').style.display = 'block';
+    }
+    function hideAttachmentForm() {
+        document.getElementById('attachmentForm').style.display = 'none';
+    }
+</script>
+
+
+</div>
+{% endblock %}
