@@ -9,14 +9,6 @@ CREATE TABLE users (
             user_phone VARCHAR(255) NOT NULL
         )
 CREATE TABLE sqlite_sequence(name,seq)
-CREATE TABLE applications (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            phone TEXT NOT NULL,
-            comment TEXT,
-            processed BOOLEAN DEFAULT FALSE,
-            admin_comment TEXT
-        )
 CREATE TABLE news (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
@@ -42,14 +34,6 @@ CREATE TABLE user_links (
                 link TEXT NOT NULL,
                 app_name VARCHAR(255)
             )
-CREATE TABLE notifications (
-                notification_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER REFERENCES users(user_id),
-                subscription_id INTEGER REFERENCES subscriptions(subscription_id),
-                sent_at TIMESTAMP,
-                message TEXT,
-                receipt_path TEXT
-            )
 CREATE TABLE services (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
@@ -65,3 +49,25 @@ CREATE TABLE prices (
                 duration INTEGER,
                 FOREIGN KEY (service_id) REFERENCES services(id)
             )
+CREATE TABLE notifications (
+                        notification_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id INTEGER REFERENCES users(user_id),
+                        subscription_id INTEGER REFERENCES subscriptions(subscription_id),
+                        sent_at TIMESTAMP,
+                        message TEXT,
+                        receipt_path TEXT
+                    )
+CREATE TABLE applications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            phone TEXT NOT NULL,
+            comment TEXT,
+            processed BOOLEAN DEFAULT FALSE,
+            admin_comment TEXT,
+            notification_type_id INTEGER,
+            FOREIGN KEY (notification_type_id) REFERENCES notification_types (id)
+        )
+CREATE TABLE notification_types (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            type_name TEXT
+        )
