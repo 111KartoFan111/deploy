@@ -31,21 +31,31 @@
     </div>
 </section>
 
-<!-- Форма отправки заявки -->
 <section class="contact-form" id="contact">
     <h2>Оставить заявку</h2>
     <div class="form-container">
         <form class="form" method="POST" action="/submit_application">
             <input type="text" name="name" placeholder="Ваше имя" required>
             <input type="tel" name="phone" placeholder="Ваш телефон" required>
-            <textarea name="comment" placeholder="Комментарий" required></textarea>
+            <textarea id="comment-field" name="comment" placeholder="Комментарий" required></textarea>
             <button type="submit" class="btn-submit">Оставить заявку</button>
         </form>
-        <div class="form-image">
-            <img class="frame-169-1" src="{{ url_for('static', filename='img/hh.svg') }}" alt="Logo">
-        </div>
     </div>
 </section>
+
+<script>
+// Автоматическое заполнение комментария при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const service = urlParams.get('service');
+    const priceType = urlParams.get('price_type');
+    if(service && priceType) {
+        const commentField = document.getElementById('comment-field');
+        commentField.value = `Выбранная конфигурация: ${decodeURIComponent(service)} (${decodeURIComponent(priceType)})`;
+        commentField.scrollIntoView({ behavior: 'smooth' });
+    }
+});
+</script>
 
 <!-- Блок новостей -->
 <section class="news-block">

@@ -10,14 +10,13 @@ main{
 .navigation-section {
     display: flex;
     flex-direction: column; /* Выстраивает кнопки в колонку */
-    align-items: flex-start; /* Прижимает к левому краю */
     padding: 10px;
     margin-top: 100px;
 }
 
 .radio-input {
-    display: none; /* Скрываем кружки радиобаттонов */
-}
+    display: none;
+  }
 
 .navigation-section label {
     background-color: #180d5b; /* Устанавливаем синий фон */
@@ -34,6 +33,10 @@ main{
     background-color: #0b5ed7; /* Более темный синий при наведении */
 }
 
+
+.navigation-section input[type="radio"]:checked + label::before {
+    background-color: #007bff; /* Цвет при выборе */
+  }
 /* Медиа-запрос для экранов шириной более 768px */
 @media (min-width: 768px) {
     .navigation-section {

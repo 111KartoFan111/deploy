@@ -72,6 +72,12 @@ pre {
       margin: 10px 0;
   }
 }
+/* Скрываем гамбургер на больших экранах и показываем меню */
+.hamburger-menu {
+  display: none;
+  font-size: 24px;
+  cursor: pointer;
+}
 
 /* Кнопка "Связаться с нами" */
 .contact-link {
@@ -344,7 +350,7 @@ section.news-block{
 
 /* Подвал */
 footer {
-  background-color: #212529;
+  background-color: #0B112B;
   color: white;
   padding: 20px;
   display: flex;

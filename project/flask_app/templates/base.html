@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Свое производство{% endblock %}</title>
     <meta name="description" content="1С бухгалтерия для бизнеса: аренда, настройка, обслуживание и интеграция. Услуги программистов и бухгалтеров, обучение и сдача налоговых отчетов.">
     {% block extra_styles %}{% endblock %}
-    <title>{% block title %}Свое производство{% endblock %}</title>
     <link rel="Icon" href="{{ url_for('static', filename='img/logo.svg') }}">
-    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/modal.css') }}">
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
 </head>
 <body>
 
@@ -29,8 +28,10 @@
         <a href="#contact" class="contact-link">Связаться с нами</a>
         {% if current_user.is_authenticated %}
             <a href="{% if current_user.role == 'admin' %}/admin{% else %}/profile{% endif %}">Профиль</a>
+            <a href="/logout">Выход</a>
         {% else %}
             <a onclick="openModal('login-modal')">Вход</a>
+            <a onclick="openModal('register-modal')">Регистрация</a>
         {% endif %}
     </nav>
 </header>
@@ -65,7 +66,6 @@
             <input type="email" name="email" placeholder="Email" required>
             <input type="tel" name="phone" placeholder="Телефон" required>
             <input type="password" name="password" placeholder="Пароль" required>
-            <input type="password" name="confirm_password" placeholder="Подтвердите пароль" required>
             <button type="submit">Зарегистрироваться</button>
         </form>
         <button class="login-button" onclick="openModal('login-modal'); closeModal('register-modal')">Вход</button>

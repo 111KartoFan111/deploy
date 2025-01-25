@@ -1,21 +1,97 @@
 {% extends 'base.html' %}
 
-{% block title %}Цены{% endblock %}
+{% block title %}Прайс{% endblock %}
 
-{% block content %}
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const buttons = document.querySelectorAll('.more-info');
-        buttons.forEach(button => {
-            button.addEventListener('click', function () {
-                // Укажите полный URL или относительный путь до страницы
-                window.location.href = '/#contact';
-            });
-        });
-    });
-</script>
-{% endblock %}
 {% block extra_styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/price.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Добавьте этот HTML вместо текущего отображения услуг -->
+<div class="category-tabs">
+    {% for category in services %}
+    <button
+        class="tab-button {% if loop.first %}active{% endif %}"
+        onclick="switchCategory('{{ category }}', this)"
+    >
+        {{ category }}
+    </button>
+    {% endfor %}
+</div>
+
+{% for category in services %}
+<div
+    id="category-{{ category }}"
+    class="category-section {% if loop.first %}active{% endif %}">
+    <div class="services-container">
+        {% for service_name, prices in services[category].items() %}
+        <div class="service-card">
+            <h3>{{ service_name }}</h3>
+            <p>{{ prices[0].description }}</p>
+
+            <div class="prices">
+                {% for price in prices %}
+                <div class="price-item">
+                    <span class="price-type">{{ price.price_type }}</span>
+                    <span class="price">{{ price.price }} ₸</span>
+                    <a href="{{ '/' }}?service={{ service_name | urlencode }}&price_type={{ price.price_type | urlencode }}" 
+                       class="buy-button">
+                        Купить
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endfor %}
+<div class="main-card">
+<div class="services-card">
+    <span class="price-type">Дополнительные услуги</span>
+    <a href="{{ '/' }}?service={{ 'Дополнительные услуги' | urlencode }}&price_type={{ 'Консультация' | urlencode }}" class="buy-button">
+        Записаться
+    </a>
+</div>
+</div>
+<script>
+function handleBuyClick(button) {
+    // Получаем данные из data-атрибутов
+    const serviceName = button.dataset.service;
+    const priceType = button.dataset.priceType;
+
+    // Формируем комментарий
+    const comment = `Выбранная конфигурация: ${serviceName} (${priceType})`;
+
+    // Находим поле комментария в форме
+    const commentField = document.querySelector('textarea[name="comment"]');
+    if(commentField) {
+        commentField.value = comment;
+    }
+
+    // Прокручиваем к форме заявки
+    const formSection = document.getElementById('contact');
+    if(formSection) {
+        formSection.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+    function switchCategory(categoryName, button) {
+        // Скрыть все секции
+        document.querySelectorAll('.category-section').forEach(section => {
+            section.classList.remove('active');
+        });
+
+        // Показать выбранную секцию
+        document.getElementById(`category-${categoryName}`).classList.add('active');
+
+        // Убрать активный класс у всех кнопок
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        // Добавить активный класс к текущей кнопке
+        button.classList.add('active');
+    }
+</script>
 {% endblock %}

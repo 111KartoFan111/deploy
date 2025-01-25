@@ -68,25 +68,6 @@ body {
   text-align: left;
 }
 
-/* Подвал */
-footer {
-  background-color: #212529;
-  color: white;
-  padding: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-footer .contact-info a {
-  color: white;
-  text-decoration: none;
-  margin: 0 10px;
-}
-footer .contact-info img {
-  width: 20px;
-  vertical-align: middle;
-  margin-right: 5px;
-}
 /* Мобильные стили */
 @media (max-width: 768px) {
   .team-block {
@@ -119,18 +100,7 @@ footer .contact-info img {
   .why-us-content p {
     margin: 5px 0; /* Уменьшено расстояние */
   }
-
-  footer {
-    padding: 15px 10px; /* Уменьшено расстояние */
-  }
 }
-/* Скрываем гамбургер на больших экранах и показываем меню */
-.hamburger-menu {
-  display: none;
-  font-size: 24px;
-  cursor: pointer;
-}
-
 section.team-block{
   margin-top: 10%;
   padding-top: 15px !important;
@@ -208,10 +178,6 @@ section.why-us{width:100%;}
 
   .why-us-content p {
     margin: 5px 0; /* Уменьшено расстояние */
-  }
-
-  footer {
-    padding: 15px 10px; /* Уменьшено расстояние */
   }
   }
 }

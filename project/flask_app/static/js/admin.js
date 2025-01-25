@@ -1,50 +1,29 @@
-function showNewsForm() {
-    document.getElementById('newsForm').style.display = 'block';
-    document.getElementById('applicationsForm').style.display = 'none';
-    document.getElementById('linkForm').style.display = 'none';
-    document.getElementById('subscriptionsForm').style.display = 'none';
-    document.getElementById('notificationsForm').style.display = 'none';
+function toggleForm(formId) {
+    // Скрываем все формы
+    const forms = document.querySelectorAll('.form-section');
+    forms.forEach(form => form.style.display = 'none');
+
+    // Показываем выбранную форму
+    const selectedForm = document.getElementById(formId);
+    if (selectedForm) {
+        selectedForm.style.display = 'block';
+
+        // Сохраняем выбранную форму в localStorage
+        localStorage.setItem('activeForm', formId);
+    }
 }
 
-function showApplicationsForm() {
-    document.getElementById('newsForm').style.display = 'none';
-    document.getElementById('applicationsForm').style.display = 'block';
-    document.getElementById('linkForm').style.display = 'none';
-    document.getElementById('subscriptionsForm').style.display = 'none';
-    document.getElementById('notificationsForm').style.display = 'none';
-}
+document.addEventListener('DOMContentLoaded', () => {
+    // Восстановить последнюю активную форму из localStorage
+    const savedForm = localStorage.getItem('activeForm') || 'newsForm';
+    toggleForm(savedForm);
 
-function showNotificationForm() {
-    document.getElementById('newsForm').style.display = 'none';
-    document.getElementById('applicationsForm').style.display = 'none';
-    document.getElementById('linkForm').style.display = 'none';
-    document.getElementById('subscriptionsForm').style.display = 'none';
-    document.getElementById('notificationsForm').style.display = 'block';
-}
-
-function showLinkForm() {
-    document.getElementById('newsForm').style.display = 'none';
-    document.getElementById('applicationsForm').style.display = 'none';
-    document.getElementById('linkForm').style.display = 'block';
-    document.getElementById('subscriptionsForm').style.display = 'none';
-    document.getElementById('notificationsForm').style.display = 'none';
-}
-
-function showSubscriptionsForm() {
-    document.getElementById('newsForm').style.display = 'none';
-    document.getElementById('applicationsForm').style.display = 'none';
-    document.getElementById('linkForm').style.display = 'none';
-    document.getElementById('subscriptionsForm').style.display = 'block';
-    document.getElementById('notificationsForm').style.display = 'none';
-}
-function showAssignSubscriptionForm() {
-    document.getElementById('assignSubscriptionForm').style.display = 'block';
-    document.getElementById('newsForm').style.display = 'none';
-    document.getElementById('applicationsForm').style.display = 'none';
-    document.getElementById('linkForm').style.display = 'none';
-    document.getElementById('subscriptionsForm').style.display = 'none';
-    document.getElementById('notificationsForm').style.display = 'none';
-}
+    // Активировать соответствующую радио-кнопку
+    const radio = document.querySelector(`input[value="${savedForm}"]`);
+    if (radio) {
+        radio.checked = true;
+    }
+});
 document.querySelector('form').addEventListener('submit', (e) => {
     const userId = document.getElementById('user_id').value;
     if (!userId) {
