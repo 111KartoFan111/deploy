@@ -1,7 +1,7 @@
 import sqlite3
 
 # Путь к вашей базе данных
-db_path = r'C:\Users\kotonai\Downloads\project\database\db.sqlite3'
+db_path = r'../database/db.sqlite3'
 
 # Подключение к базе данных
 conn = sqlite3.connect(db_path)
