@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 # Функция для проверки подписок и отправки уведомлений
 def check_and_notify_subscriptions():
     # Подключаемся к базе данных
-    conn = sqlite3.connect('your_database.db')
+    conn = sqlite3.connect(r'../database/db.sqlite3')
     cursor = conn.cursor()
 
     # Получаем текущую дату и дату через 3 дня
