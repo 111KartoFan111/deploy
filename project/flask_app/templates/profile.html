@@ -70,33 +70,31 @@
         const li = button.closest('li');
         const display = li.querySelector('.link-display');
         const form = li.querySelector('.edit-form');
-        
         display.style.display = 'none';
         form.style.display = 'block';
         form.querySelector('.app-name-input').focus();
     }
-    
+
     function cancelEdit(button) {
         const li = button.closest('li');
         const display = li.querySelector('.link-display');
         const form = li.querySelector('.edit-form');
-        
+
         form.style.display = 'none';
         display.style.display = 'block';
     }
-    
     async function saveEdit(button) {
         const li = button.closest('li');
         const input = li.querySelector('.app-name-input');
         const link = decodeURIComponent(li.dataset.link);
         const newAppName = input.value.trim();
-    
+
         if (!newAppName) {
             alert('Название не может быть пустым');
             input.focus();
             return;
         }
-    
+
         try {
             const response = await fetch('/update_app_name', {
                 method: 'POST',
@@ -109,9 +107,9 @@
                     newAppName: newAppName
                 })
             });
-    
+
             const data = await response.json();
-            
+
             if (data.success) {
                 li.querySelector('.app-name').textContent = newAppName;
                 cancelEdit(button);
@@ -261,7 +259,7 @@
                 <form id="uploadForm" onsubmit="uploadReceipt(event)">
                     <input type="file" id="receiptFile" name="receipt" accept="image/*,application/pdf" required>
                     <br><br>
-                    <button type="submit">Отправить чек</button>
+                    <button type="submit" onclick="closeModalss()">Отправить чек</button>
                 </form>
                 <p id="uploadMessage"></p>
             </div>

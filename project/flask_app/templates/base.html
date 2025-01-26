@@ -76,17 +76,20 @@
 <div id="too-register-modal" class="modal" style="display: none;">
     <div class="modal-content">
         <span class="close" onclick="closeModal('too-register-modal')">&times;</span>
-        <h2>Регистрация организаций</h2>
-        <form method="POST" action="/register">
+        <h2>Регистрация организаций в разработке</h2>
+        <!-- Модальные окна<form method="POST" action="/register-too">
             <input type="text" name="name" placeholder="Название" required>
             <input type="email" name="email" placeholder="Email" required>
             <input type="tel" name="phone" placeholder="Контактный телефон" required>
             <button type="submit">Отправить заявку на одобрение</button>
+            <input type="hidden" id="notification-type-id" name="notification_type_id" value="3">
         </form>
+        -->
         <button class="login-button" onclick="openModal('login-modal'); closeModal('too-register-modal')">Войти</button>
         <button class="login-button" onclick="openModal('register-modal'); closeModal('too-register-modal')">Зарегистрироваться</button>
     </div>
 </div>
+
 
 <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
 <!-- Подвал -->

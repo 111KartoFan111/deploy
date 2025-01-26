@@ -5,13 +5,13 @@ import pandas as pd
 from io import BytesIO
 from flask_login import UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_wtf.csrf import CSRFProtect
 from flask import jsonify
 from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 import os
 from dateutil.relativedelta import relativedelta
 import logging
+from collections import defaultdict
 
 
 app = Flask(__name__)
@@ -22,7 +22,7 @@ login_manager = LoginManager(app)
 login_manager.init_app(app)
 
 # Настраиваем папку для загрузки
-UPLOAD_FOLDER = r'C:\Users\kotonai\Downloads\project\database\file'
+UPLOAD_FOLDER = r'../database/file'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
@@ -60,7 +60,7 @@ def load_user(user_id):
 
 # Конфигурация базы данных
 def get_db_connection():
-    conn = sqlite3.connect(r'C:\Users\kotonai\Downloads\project\database\db.sqlite3')
+    conn = sqlite3.connect(r'../database/db.sqlite3')
     conn.row_factory = sqlite3.Row  # Для доступа к данным по имени столбца
     return conn
 
@@ -81,14 +81,15 @@ def submit_application():
     name = request.form['name']
     phone = request.form['phone']
     comment = request.form['comment']
+    notification_type_id = 1
 
     # Сохраняем заявку в базе
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO applications (name, phone, comment, processed)
-        VALUES (?, ?, ?, ?)
-        """, (name, phone, comment, False))  # по умолчанию заявка не обработана
+        INSERT INTO applications (name, phone, comment, processed,notification_type_id)
+        VALUES (?, ?, ?, ?, ?)
+        """, (name, phone, comment, False, notification_type_id))  # по умолчанию заявка не обработана
     conn.commit()
     conn.close()
 
@@ -138,6 +139,7 @@ def register():
     finally:
         conn.close()
     return redirect('/')
+
 
 @app.route('/logout')
 @login_required
@@ -247,11 +249,22 @@ def admin_page():
             conn.commit()
 
         elif action == 'process_application':
-            app_id = request.form['app_id']
-            processed = request.form['processed']
-            admin_comment = request.form['admin_comment']
-            cur.execute('UPDATE applications SET processed=?, admin_comment=? WHERE id=?', (processed, admin_comment, app_id))
-            conn.commit()
+            app_id = request.form.get('app_id')
+            processed = request.form.get('processed')
+            admin_comment = request.form.get('admin_comment')
+
+            print(f"Received app_id: {app_id}, processed: {processed}, admin_comment: {admin_comment}")
+
+            if app_id and processed:
+                try:
+                    cur.execute(
+                        'UPDATE applications SET processed = ?, admin_comment = ? WHERE id = ?',
+                        (processed, admin_comment, app_id)
+                    )
+                    conn.commit()
+                    print("Database updated successfully.")
+                except Exception as e:
+                    print(f"Error updating database: {e}")
 
         elif action == 'update_role':
             user_id = request.form['user_id']
@@ -259,23 +272,22 @@ def admin_page():
             cur.execute('UPDATE users SET role = ? WHERE user_id = ?', (new_role, user_id))
             conn.commit()
 
-        elif action == 'add_link':
-            user_id = request.form['user_id']
-            link_name = request.form['link_name']
-            link_url = request.form['link_url']
-            if user_id and link_name and link_url:
-                cur.execute(
-                    'INSERT INTO user_links (user_id, app_name, link) VALUES (?, ?, ?)',
-                    (user_id, link_name, link_url)
-                )
-                conn.commit()
-
     # Получение данных для форм
     cur.execute('SELECT * FROM news')
     news_list = [dict(row) for row in cur.fetchall()]
 
-    cur.execute('SELECT * FROM applications')
+    cur.execute('''
+        SELECT a.*, n.type_name
+        FROM applications a
+        LEFT JOIN notification_types n ON a.notification_type_id = n.id
+    ''')
     applications = [dict(row) for row in cur.fetchall()]
+
+    # Группируем заявки по категориям
+    grouped_applications = defaultdict(list)
+    for app in applications:
+        category = app.get('type_name', 'Без категории')  # Название категории или 'Без категории', если None
+        grouped_applications[category].append(app)
 
     cur.execute('SELECT * FROM users')
     users = [dict(row) for row in cur.fetchall()]
@@ -370,7 +382,8 @@ def admin_page():
         user_links=user_links,
         subscriptions=subscriptions,
         services=services,
-        servicesa=list(servicesa.values())
+        servicesa=list(servicesa.values()),
+        grouped_applications=grouped_applications
     )
 
 
@@ -391,7 +404,6 @@ def update_price():
             INSERT OR REPLACE INTO prices (service_id, price_type, price, duration)
             VALUES (?, ?, ?, ?)
         ''', (service_id, price_type, price, duration))
-        
         conn.commit()
     except Exception as e:
         print(f"Ошибка: {e}")
@@ -853,9 +865,9 @@ def submit_applications():
     conn = sqlite3.connect(r'C:\Users\kotonai\Downloads\project\database\db.sqlite3')
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO applications (name, phone, comment)
-        VALUES (?, ?, ?)
-    ''', (data['name'], data['phone'], data['comment']))
+        INSERT INTO applications (name, phone, comment, notification_type_id)
+        VALUES (?, ?, ?, ?)
+    ''', (data['name'], data['phone'], data['comment'], data['notification_type_id']))
     conn.commit()
     conn.close()
 
@@ -910,5 +922,7 @@ def upload_receipt(subscription_id):
     except Exception as e:
         app.logger.error(f"Ошибка: {str(e)}")
         return jsonify({'message': f'Ошибка сервера: {str(e)}'}), 500
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=5000)

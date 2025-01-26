@@ -137,15 +137,6 @@ section {
 #newsForm select {
     background-color: f0f8ff; /* Светло-голубой для выпадающего списка */
 }
-#applicationsForm {
-    background-color: f0f8ff; /* Светло-голубой фон */
-    border: 2px solid white; /* Голубая рамка */
-    border-radius: 10px;
-    padding: 20px;
-    width: 450px;
-    margin: 20px auto;
-    box-shadow: 0 4px 8px #0000ff33;
-}
 
 #applicationsForm h2 {
     color: #004080; /* Темно-синий цвет заголовков */
@@ -160,12 +151,20 @@ section {
     font-weight: bold;
     margin-bottom: 5px;
 }
-
+#applicationsForm select{
+    width: 260px;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid white; /* Голубая рамка */
+    border-radius: 5px;
+    background-color: white; /* Очень светлый голубой */
+    font-size: 1rem;
+    color: #003366; /* Темно-синий текст */
+}
 #applicationsForm input[type="text"],
 #applicationsForm textarea,
-#applicationsForm select,
 #applicationsForm pre {
-    width: 100%;
+    width: 240px;
     padding: 10px;
     margin-bottom: 15px;
     border: 1px solid white; /* Голубая рамка */

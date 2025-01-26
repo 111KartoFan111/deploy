@@ -177,28 +177,79 @@
         </script>
     </div>
 
-    <!-- Applications Form -->
     <div id="applicationsForm" style="display: none;" class="form-section">
         <h2>Обработать заявки</h2>
-        <form method="POST">
-            {% for app in applications %}
-            <input type="hidden" name="action" value="process_application">
-            <label>Заявка:</label>
-            <pre>Имя: {{app.name}}</pre>
-            <label>Обработано:</label>
-            <select name="processed">
-                <option value="True">Да</option>
-                <option value="False">Нет</option>
-            </select>
-            <label>Номер:</label>
-            <pre name="number">{{app.phone}}</pre>
-            <label>Комментарий :</label>
-            <pre name="comment">{{app.comment}}</pre>
-            <button type="submit">Обработать заявку</button>
+        <div class="categories-containera">
+            {% for category, apps in grouped_applications.items() %}
+            <div class="category-carda">
+                <h3>{{ category }}</h3>
+                {% for app in apps %}
+                <form method="POST" class="application-forma">
+                    <input type="hidden" name="action" value="process_application">
+                    <input type="hidden" name="app_id" value="{{ app.id }}">
+                    <label>Заявка:</label>
+                    <pre>Имя: {{ app.name }}</pre>
+                    <label>Обработано:</label>
+                    <select name="processed">
+                        <option value="True" {% if app.processed %}selected{% endif %}>Да</option>
+                        <option value="False" {% if not app.processed %}selected{% endif %}>Нет</option>
+                    </select>
+                    <label>Номер:</label>
+                    <div>{{ app.phone }}</div>
+                    <label>Комментарий:</label>
+                    <div>{{ app.comment }}</div>
+                    <label>Комментарий администратора:</label>
+                    <textarea name="admin_comment" placeholder="{{ app.admin_comment }}"></textarea>
+                    <button type="submit">Обработать заявку</button>
+                </form>
+                {% endfor %}
+            </div>
             {% endfor %}
-        </form>
+        </div>
     </div>
-
+    <style>
+        .categories-containera {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            flex-direction: row;
+        }
+    
+        .category-carda{
+            flex: 1 1 calc(33.33% - 20px); /* Три карты в ряд, с учетом промежутков */
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 16px;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+    
+        .category-carda h3 {
+            margin-top: 0;
+            font-size: 1.5em;
+            text-align: center;
+        }
+    
+        .application-forma {
+            margin-bottom: 20px;
+        }
+    
+        .application-forma button {
+            margin-top: 10px;
+        }
+    
+        /* Дополнительно для мобильных устройств */
+        @media (max-width: 768px) {
+            .category-carda {
+                flex: 1 1 100%; /* На маленьких экранах карты занимают всю ширину */
+                max-width: 100%;
+            }
+        }
+    </style>
+    
+    <!-- Подписки -->
     <div id="subscriptionsForm" style="display: none;" class="form-section">
         <h2>Управление подписками</h2>
         <table>

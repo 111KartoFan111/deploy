@@ -38,23 +38,32 @@
             <input type="text" name="name" placeholder="Ваше имя" required>
             <input type="tel" name="phone" placeholder="Ваш телефон" required>
             <textarea id="comment-field" name="comment" placeholder="Комментарий" required></textarea>
+
+            <!-- Скрытое поле для notification_type_id -->
+            <input type="hidden" id="notification-type-id" name="notification_type_id" value="1">
+
             <button type="submit" class="btn-submit">Оставить заявку</button>
         </form>
     </div>
 </section>
 
 <script>
-// Автоматическое заполнение комментария при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const service = urlParams.get('service');
-    const priceType = urlParams.get('price_type');
-    if(service && priceType) {
-        const commentField = document.getElementById('comment-field');
-        commentField.value = `Выбранная конфигурация: ${decodeURIComponent(service)} (${decodeURIComponent(priceType)})`;
-        commentField.scrollIntoView({ behavior: 'smooth' });
-    }
-});
+<section class="contact-form" id="contact">
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const service = urlParams.get('service');
+        const priceType = urlParams.get('price_type');
+
+        if (service && priceType) {
+            const commentField = document.getElementById('comment-field');
+            const notificationTypeIdField = document.getElementById('notification-type-id');
+
+            commentField.value = `Выбранная конфигурация: ${decodeURIComponent(service)} (${decodeURIComponent(priceType)})`;
+
+            // Прокрутка к полю комментария (опционально)
+            commentField.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
 </script>
 
 <!-- Блок новостей -->
