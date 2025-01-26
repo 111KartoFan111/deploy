@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Свое производство{% endblock %}</title>
+    <meta name="description" content="1С бухгалтерия для бизнеса: аренда, настройка, обслуживание и интеграция. Услуги программистов и бухгалтеров, обучение и сдача налоговых отчетов.">
+    {% block extra_styles %}{% endblock %}
+    <link rel="Icon" href="{{ url_for('static', filename='img/logo.svg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modal.css') }}">
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+</head>
+<body>
+
+<!-- Шапка сайта -->
+<header>
+    <div class="logo">
+        <img src="{{ url_for('static', filename='img/Frame169-1.svg') }}" alt="Logo">
+    </div>
+    <div class="hamburger-menu" onclick="toggleMenu()">☰</div>
+    <nav class="nav-bar">
+        <a href="/">Главная</a>
+        <a href="about">О нас</a>
+        <a href="price">Цены</a>
+        <a href="news">Новости</a>
+        <a href="solutions">Приложения</a>
+        <a href="dogovor">Договоры</a>
+        <a href="#contact" class="contact-link">Связаться с нами</a>
+        {% if current_user.is_authenticated %}
+            <a href="{% if current_user.role == 'admin' %}/admin{% else %}/profile{% endif %}">Профиль</a>
+            <a href="/logout">Выход</a>
+        {% else %}
+            <a onclick="openModal('login-modal')">Вход</a>
+            <a onclick="openModal('register-modal')">Регистрация</a>
+        {% endif %}
+    </nav>
+</header>
+<script src="{{ url_for('static', filename='js/header.js') }}"></script>
+
+<!-- Основной контент страницы -->
+<main>
+    {% block content %}
+    {% endblock %}
+</main>
+<!-- Модальные окна -->
+<div id="login-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('login-modal')">&times;</span>
+        <h2>Вход</h2>
+        <form method="POST" action="/login">
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Пароль" required>
+            <button type="submit">Войти</button>
+        </form>
+        <button class="login-button" onclick="openModal('register-modal'); closeModal('login-modal')">Зарегистрировать</button>
+        <button class="login-button" onclick="openModal('too-register-modal'); closeModal('login-modal')">Регистрация организаций</button>
+    </div>
+</div>
+
+<div id="register-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('register-modal')">&times;</span>
+        <h2>Регистрация</h2>
+        <form method="POST" action="/register">
+            <input type="text" name="name" placeholder="Имя" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="tel" name="phone" placeholder="Телефон" required>
+            <input type="password" name="password" placeholder="Пароль" required>
+            <button type="submit">Зарегистрироваться</button>
+        </form>
+        <button class="login-button" onclick="openModal('login-modal'); closeModal('register-modal')">Вход</button>
+        <button class="login-button" onclick="openModal('too-register-modal'); closeModal('register-modal')">Регистрация организаций</button>
+    </div>
+</div>
+
+<div id="too-register-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('too-register-modal')">&times;</span>
+        <h2>Регистрация организаций в разработке</h2>
+        <!-- Модальные окна<form method="POST" action="/register-too">
+            <input type="text" name="name" placeholder="Название" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="tel" name="phone" placeholder="Контактный телефон" required>
+            <button type="submit">Отправить заявку на одобрение</button>
+            <input type="hidden" id="notification-type-id" name="notification_type_id" value="3">
+        </form>
+        -->
+        <button class="login-button" onclick="openModal('login-modal'); closeModal('too-register-modal')">Войти</button>
+        <button class="login-button" onclick="openModal('register-modal'); closeModal('too-register-modal')">Зарегистрироваться</button>
+    </div>
+</div>
+
+
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+<!-- Подвал -->
+<footer>
+    <div class="footer-left">
+        <div class="logo">
+          <img class="frame-169-1" src="{{ url_for('static', filename='img/Frame169-1.svg') }}" alt="Логотип">
+        </div>
+    </div>
+    <div id="contact" class="contact-info">
+        <p>Остались вопросы? Позвоните нам:</p>
+        <p><a href="tel:+77007553871">+7 700 755 3871</a></p>
+        <a href="https://www.instagram.com/sp_program_kz/">
+          <img src="{{ url_for('static', filename='img/instagram-line.svg') }}" alt="Instagram Icon">sp_program_kz
+        </a>
+        <a href="https://wa.me/77007553871">
+            <img src="{{ url_for('static', filename='img/whatsapp-line.svg') }}" alt="WhatsApp Icon" /> +7 700 755 3871
+        </a>
+    </div>
+</footer>
+</body>
+</html>

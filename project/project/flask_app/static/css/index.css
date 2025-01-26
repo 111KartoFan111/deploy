@@ -1,0 +1,502 @@
+/* Общие стили */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+  color: #333;
+  overflow-x: hidden;
+}
+/*Убрать полосу прокрутки для всей страницы*/
+::-webkit-scrollbar {
+  width: 0;
+}
+/* Шапка */
+header {
+  background-color: #ffffff;
+  color: #212529;
+  padding: 15px 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+pre {
+  white-space: pre-wrap; /* Перенос текста, если он не вмещается */
+  word-wrap: break-word; /* Перенос длинных слов */
+  overflow-wrap: break-word; /* Дополнительное свойство для переноса */
+  font-family: inherit; /* Наследование шрифта, чтобы текст выглядел гармонично */
+  padding: 10px; /* Отступы внутри контейнера */
+}
+
+
+/* Responsive Navigation */
+@media (max-width: 768px) {
+  header {
+      padding: 10px;
+  }
+  .nav-bar {
+      display: none;
+      margin-right: 5%;
+  }
+  .header-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+  }
+  .logo {
+      margin-bottom: 10px;
+  }
+  .hamburger-menu {
+      display: block;
+      cursor: pointer;
+      font-size: 24px;
+  }
+  .nav-bar.active {
+      display: block;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 90%;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      text-align: center;
+  }
+  .nav-bar.active a {
+      display: block;
+      margin: 10px 0;
+  }
+}
+/* Скрываем гамбургер на больших экранах и показываем меню */
+.hamburger-menu {
+  display: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Кнопка "Связаться с нами" */
+.contact-link {
+  margin-left: auto;
+}
+
+.logo img {
+  width: 100%;
+  max-width: 120px;
+}
+
+header a {
+  color: white;
+  text-decoration: none;
+  margin: 0 15px;
+  padding: 10px 15px;
+  background-color: #180d5b;
+  border: 1px solid #22417a;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+header a:hover {
+  background-color: #22417a;
+  color: #ffffff;
+}
+header a:active {
+  background-color: #0098FF;
+  color: white;
+  border: 1px solid #ffffff;
+}
+
+/* Основной блок с текстом */
+.main-block {
+  display: flex;
+  justify-content: space-between;
+  padding: 0px 0px 30px;
+  background-color: #ffffff;
+}
+section {
+  margin-top: 90px;
+  padding-top: 15px !important;
+}
+section.services-block {
+  margin-top: 10px;
+  padding-top: 15px !important;
+}
+section.news-block{
+  margin-top: 30px;
+  padding-top: 15px !important;
+}
+.main-block .text {
+  max-width: 50%;
+}
+.main-block .text h1 {
+  color: #005A8A;
+  font-size: 36px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.main-block .text p {
+  font-size: 18px;
+  margin: 20px 0;
+}
+.main-block .text a {
+  background-color: #0098FF;
+  color: white;
+  padding: 12px 30px;
+  text-decoration: none;
+  font-size: 18px;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+.main-block .text a:hover {
+  background-color: #005A8A;
+}
+.main-block .image img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Блок с формой */
+.contact-form {
+  background-color: #f4f4f4;
+  padding: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.form-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.form {
+  width: 48%;
+  margin-right: 2%;
+}
+
+.form input,
+.form textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+.form button {
+  background-color: #0d6efd;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: none;
+  width: inherit;
+}
+
+.form button:hover {
+  background-color: #0098FF;
+}
+
+.form-image {
+  width: 48%;
+  text-align: center;
+}
+
+.form-image img {
+  width: 70%;
+  height: auto;
+  bottom: 17px;
+  margin-left:30%;
+}
+
+/* Медиазапросы для адаптивности */
+@media screen and (max-width: 768px) {
+  .form-container {
+      flex-direction: column;
+      align-items: center;
+  }
+
+  .form {
+      width: 80%;
+      margin-right: 0;
+  }
+
+  .form-image {
+    display: none;
+  }
+
+  .form-image img {
+    display: none;
+  }
+}
+
+/* Блок новостей */
+.news-block {
+  padding: 40px 20px;
+  background-color: #ffffff;
+  width: 100%;
+}
+.news-block h2 {
+  text-align: center;
+  font-size: 32px;
+  color: #005A8A;
+}
+.news-items {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap; /* Позволяет переносить блоки на новые строки */
+}
+.news-item {
+  background-color: #f1f1f1;
+  padding: 20px;
+  margin: 10px;
+  border-radius: 5px;
+  width: 45%;
+}
+.news-item h3 {
+  font-size: 24px;
+  color: #005A8A;
+}
+.news-item p {
+  font-size: 16px;
+}
+.news-block .btn-news {
+  background-color: #0098FF;
+  color: white;
+  padding: 12px 30px;
+  border: 1px solid #0098FF;
+  border-radius: 5px;
+  font-size: 18px;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s;
+}
+.news-block .btn-news:hover {
+  background-color: #005A8A;
+  color: white;
+}
+.news-block .btn-news:active {
+  background-color: #ffffff;
+  color: #0098FF;
+  border: 1px solid #0098FF;
+}
+
+/* Наши услуги */
+.services-block {
+  background-image: url('/static/img/Image.png');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  padding: 60px 20px;
+}
+/* Блок с услугами */
+.services-block {
+  padding: 50px 20px;
+  text-align: center;
+}
+
+.services-block h2 {
+  font-size: 2rem;
+  color: white;
+  margin-bottom: 30px;
+}
+
+/* Контейнер для услуг, 2 колонки */
+.service-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* Каждый блок услуги */
+.service-group {
+  flex: 1 1 45%; /* Каждый блок будет занимать 45% ширины */
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Заголовок для каждой услуги */
+.service-group h3 {
+  font-size: 1.5rem;
+  color: #ffffff;
+}
+
+/* Описание услуги */
+.service-group p {
+  font-size: 1rem;
+  color: #ffffff;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+/* Мобильные стили для 1 колонки */
+@media (max-width: 768px) {
+  .service-container {
+      flex-direction: column;
+      align-items: center;
+  }
+
+  .service-group {
+      width: 100%; /* Каждый блок будет занимать всю ширину */
+      margin-bottom: 30px;
+  }
+}
+
+
+/* Подвал */
+footer {
+  background-color: #0B112B;
+  color: white;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+footer .contact-info a {
+  color: white;
+  text-decoration: none;
+  margin: 0 10px;
+}
+footer .contact-info img {
+  width: 20px;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+/* Мобильные стили */
+@media (max-width: 768px) {
+  /* Основной блок: размещение текста и изображения по центру */
+  .main-block {
+      display: flex;
+      flex-direction: column; /* Элементы основного блока располагаются вертикально */
+      align-items: center; /* Выравнивание по центру */
+      width:113%;
+  }
+
+  .main-block .text {
+      max-width: 100%; /* Максимальная ширина текста — 100% */
+      text-align: center; /* Центрирование текста */
+      margin-bottom: 20px; /* Отступ снизу */
+      padding: 10px,10px;
+  }
+  .main-block .image img {
+    display: none;
+  }
+  .services-block{
+    width:105%;
+  }
+
+  /* Блок с услугами: текст выравнивается по центру */
+  .services-block .service-group {
+      text-align: center; /* Центрирование текста */
+      margin-bottom: 30px; /* Отступ снизу между сервисами */
+  }
+  .services-block .service-group h3 {
+      font-size: 1.2rem; /* Уменьшаем размер заголовков */
+  }
+
+  .services-block .service-group p {
+      font-size: 1rem; /* Уменьшаем размер текста */
+      padding: 0 20px; /* Добавляем отступы по бокам */
+  }
+
+  /* Новости: переносим новости в колонку */
+  .news-container {
+      display: flex;
+      flex-direction: column; /* Новости размещаются по одному в колонке */
+      align-items: center; /* Выравниваем по центру */
+      gap: 20px; /* Отступ между новостями */
+  }
+
+  .news-item {
+      width: 90%; /* Ширина новостей 90% от экрана */
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      background-color: #fff;
+  }
+
+  .news-item h3 {
+      font-size: 1.3rem; /* Уменьшаем размер шрифта */
+  }
+
+  .news-item p {
+      font-size: 1rem; /* Уменьшаем шрифт для текста */
+  }
+  .contact-form{
+    width: 95%;
+  }
+  .form button {
+    background-color: #0d6efd;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: none;
+    width: inherit;
+  }
+  .news-block {
+    padding: 40px 30px;
+    background-color: #ffffff;
+    width: 100%;
+  }
+
+  footer {
+      flex-direction: column; /* Размещение элементов в колонку */
+      text-align: center; /* Центрирование текста */
+      width: 105%;
+  }
+
+  .footer-links {
+      margin-top: 10px;
+  }
+}
+/* Скрываем гамбургер на больших экранах и показываем меню */
+.hamburger-menu {
+  display: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* На мобильных разрешениях показываем гамбургер и скрываем навигацию по умолчанию */
+@media (max-width: 768px) {
+  .hamburger-menu {
+    display: block;
+    margin-right: 5%;
+}
+
+.nav-bar {
+    display: none; /* Скрыто по умолчанию */
+    flex-direction: column;
+    background: #fff;
+    position: absolute;
+    top: 60px; /* Или сколько нужно ниже шапки */
+    left: -15px; /* Сдвигаем меню на 15px влево */
+    width: 100%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nav-bar a {
+    display: block;
+    margin: 10px 0;
+    color: #180d5b;
+    background: none;
+    border: none;
+}
+
+/* Когда будет активен класс active, показываем меню */
+.nav-bar.active {
+    display: flex;
+}
+}
+.pricing-section{
+  padding-top: 50px;
+  margin-top: 17%;
+}
+.main-block .text{
+  text-align: center;
+}

@@ -1,0 +1,268 @@
+{% extends 'base.html' %}
+
+{% block title %}Личный кабинет{% endblock %}
+
+{% block extra_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modal.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/news.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<main>
+    <section class="navigation-section">
+        <label>
+            <input type="radio" name="toggle" onclick="toggleSection('links-section')" class="radio-input">
+            Приложения
+        </label>
+        <label>
+            <input type="radio" name="toggle" onclick="toggleSection('notifications-section')"class="radio-input">
+            Уведомления
+        </label>
+        <label>
+            <input type="radio" name="toggle" onclick="toggleSection('subscriptions-section')"class="radio-input">
+            Подписки
+        </label>
+        <label>
+            <input type="radio" name="toggle" onclick="toggleSection('profile-section')"class="radio-input">
+            Мой данные
+        </label>
+    </section>
+
+
+<section id="profile-section" class="profile-section" style="display: none;">
+    <h2>Ваши данные</h2>
+        <ul>
+            <br>ФИО:{{current_user.username}}</br>
+            <br>Почта:{{current_user.email}}</br>
+            <br>Телефон:{{current_user.phone}}</br>
+        </ul>
+</section>
+
+<!-- Секция для ссылок -->
+<section id="links-section" class="profile-section" style="display: none;">
+    <h2>Ваши базы 1С</h2>
+    {% if user_links %}
+        <ul class="links-list">
+            {% for link, app_name in user_links %}
+                <li data-link="{{ link | urlencode }}">
+                    <div class="link-display">
+                        <strong class="app-name">{{ app_name }}</strong>
+                        <a href="{{ link }}" target="_blank" class="link-url">{{ link }}</a>
+                        <button class="edit-btn" onclick="startEdit(this)">Редактировать</button>
+                    </div>
+                    <div class="edit-form" style="display: none;">
+                        <input type="text" class="app-name-input" value="{{ app_name }}" />
+                        <div class="edit-buttons">
+                            <button class="save-btn" style="margin-top: 10px;" onclick="saveEdit(this)">Сохранить</button>
+                            <button class="cancel-btn" onclick="cancelEdit(this)">Отмена</button>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>У вас пока нет сохраненных ссылок.</p>
+    {% endif %}
+</section>
+<script>
+    function startEdit(button) {
+        const li = button.closest('li');
+        const display = li.querySelector('.link-display');
+        const form = li.querySelector('.edit-form');
+        display.style.display = 'none';
+        form.style.display = 'block';
+        form.querySelector('.app-name-input').focus();
+    }
+
+    function cancelEdit(button) {
+        const li = button.closest('li');
+        const display = li.querySelector('.link-display');
+        const form = li.querySelector('.edit-form');
+
+        form.style.display = 'none';
+        display.style.display = 'block';
+    }
+    async function saveEdit(button) {
+        const li = button.closest('li');
+        const input = li.querySelector('.app-name-input');
+        const link = decodeURIComponent(li.dataset.link);
+        const newAppName = input.value.trim();
+
+        if (!newAppName) {
+            alert('Название не может быть пустым');
+            input.focus();
+            return;
+        }
+
+        try {
+            const response = await fetch('/update_app_name', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                    // Убрана строка с CSRF-токеном
+                },
+                body: JSON.stringify({
+                    link: link,
+                    newAppName: newAppName
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                li.querySelector('.app-name').textContent = newAppName;
+                cancelEdit(button);
+            } else {
+                throw new Error(data.message || 'Ошибка сервера');
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            alert('Не удалось сохранить изменения. Попробуйте ещё раз.');
+        }
+    }
+</script>
+
+
+<section id="notifications-section" class="profile-section" style="display: none;">
+    <h2>Уведомления</h2>
+    {% if notifications %}
+        <ul>
+            {% for notification in notifications %}
+                <li>
+                    <strong>{{ notification.sent_at }}:</strong> {{ notification.message }}
+                {% if notification.receipt_path %}
+                    <br>
+                    <a href="{{ url_for('download_file', filename=notification.receipt_path) }}" target="_blank">
+                        Просмотреть файл
+                    </a>
+                {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>У вас пока нет уведомлений.</p>
+    {% endif %}
+</section>
+    <!-- Раздел для подписок -->
+    <section id="subscriptions-section" class="profile-section" style="display: none;">
+        <h2>Подписки</h2>
+        {% if subscriptions %}
+            <ul>
+                {% for subscription in subscriptions %}
+                    <li>
+                        <strong>{{ subscription.service_name }}</strong><br>
+                        Цена: {{ subscription.price }}<br>
+                        С {{ subscription.start_date }} по {{ subscription.end_date }}<br>
+                        <!-- Кнопка для открытия модального окна -->
+                        <button class="receipt-button" id="subscriptionId" onclick="openModalss({{ subscription.id }})">Продлить подписку</button>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>У вас пока нет активных подписок.</p>
+        {% endif %}
+    </section>
+
+    <script>
+        let currentSubscriptionId = null;
+
+        function openModalss(subscriptionId) {
+            document.getElementById('receiptModal').style.display = 'block';
+            currentSubscriptionId = subscriptionId;
+        }
+
+        // Закрыть модальное окно
+        function closeModalss() {
+            document.getElementById('receiptModal').style.display = 'none';
+            document.getElementById('uploadMessage').innerText = ''; // Очистить сообщение
+        }
+
+        // Отправка файла на сервер
+        async function uploadReceipt(event) {
+    event.preventDefault();
+    const fileInput = document.getElementById('receiptFile');
+    const status = document.getElementById('uploadStatus');
+    const file = fileInput.files[0];
+
+    if (!file) {
+        showError('Пожалуйста,загрузите чек.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('receipt', file);
+
+    try {
+        showLoading();
+        const response = await fetch(`/upload_receipt/${currentSubscriptionId}`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        showSuccess(result.message);
+        setTimeout(closeModal, 1500);
+
+    } catch (error) {
+        showError(error.message);
+        console.error('Upload error:', error);
+    }
+    }
+
+    function showLoading() {
+        status.textContent = 'Загрузка...';
+        status.className = 'status-message loading';
+    }
+
+    function showSuccess(message) {
+        status.textContent = message;
+        status.className = 'status-message success';
+    }
+
+    function showError(message) {
+        status.textContent = message;
+        status.className = 'status-message error';
+    }
+    function toggleSection(sectionId) {
+        // Скрываем все секции
+        const sections = document.querySelectorAll('.profile-section');
+        sections.forEach(section => section.style.display = 'none');
+
+        // Показываем выбранную секцию
+        document.getElementById(sectionId).style.display = 'block';
+
+        // Сохраняем выбранную секцию в localStorage
+        localStorage.setItem('selectedSection', sectionId);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Восстанавливаем выбранную секцию из localStorage
+        const savedSection = localStorage.getItem('selectedSection') || 'profile-section';
+        document.getElementById(savedSection).style.display = 'block';
+
+        // Активируем соответствующую радио-кнопку
+        const radio = document.querySelector(`input[onclick="toggleSection('${savedSection}')"]`);
+        if (radio) {
+            radio.checked = true;
+        }
+    });
+    </script>
+        <!-- Модальное окно -->
+        <div id="receiptModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModalss()">&times;</span>
+                <h3>Реквизиты</h3>
+                <pre>Kaspik Bank : 8 707 265 87 39</pre>
+                <pre>Halyk QR : 8 707 265 87 39</pre>
+                <h3>Загрузите чек ниже</h3>
+                <form id="uploadForm" onsubmit="uploadReceipt(event)">
+                    <input type="file" id="receiptFile" name="receipt" accept="image/*,application/pdf" required>
+                    <br><br>
+                    <button type="submit" onclick="closeModalss()">Отправить чек</button>
+                </form>
+                <p id="uploadMessage"></p>
+            </div>
+        </div>
+</main>
+{% endblock %}
