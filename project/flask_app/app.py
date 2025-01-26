@@ -756,7 +756,7 @@ def assign_subscription():
 @app.route('/get_price')
 def get_price():
     try:
-        conn = sqlite3.connect(r'C:\Users\kotonai\Downloads\project\database\db.sqlite3')
+        conn = get_db_connection()
         cursor = conn.cursor()
         service_id = int(request.args.get('service_id', 0))
         duration = int(request.args.get('period', 0))
@@ -862,7 +862,7 @@ def submit_applications():
     if not data.get('name') or not data.get('phone'):
         return jsonify({'success': False, 'message': 'Имя и телефон обязательны!'}), 400
 
-    conn = sqlite3.connect(r'C:\Users\kotonai\Downloads\project\database\db.sqlite3')
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('''
         INSERT INTO applications (name, phone, comment, notification_type_id)
