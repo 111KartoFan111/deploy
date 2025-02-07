@@ -4,7 +4,6 @@ import sqlite3
 import pandas as pd
 from io import BytesIO
 from flask_login import UserMixin, login_user, login_required, logout_user, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
 from flask import jsonify
 from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
@@ -12,6 +11,9 @@ import os
 from dateutil.relativedelta import relativedelta
 import logging
 from collections import defaultdict
+import secrets
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_mail import Mail, Message
 
 
 app = Flask(__name__)
@@ -21,11 +23,21 @@ app.config['SECRET_KEY'] = '#\xcbK\x8f\xa1,\x8b\x85H\x9b\xdd\xa2\xd9:\xcf2\xb3>\
 login_manager = LoginManager(app)
 login_manager.init_app(app)
 
+
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USERNAME'] = 'svoeproizodstvo@gmail.com'  # Use your actual Gmail address
+app.config['MAIL_PASSWORD'] = 'oayo ytat dvju bppl'     # Use your generated App Password
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+mail = Mail(app)
+
+
 # Настраиваем папку для загрузки
-UPLOAD_FOLDER = r'../database/file'
+UPLOAD_FOLDER = r'C:\Users\kotonai\Downloads\project\database\file'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf','xlsx','xls'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -60,7 +72,7 @@ def load_user(user_id):
 
 # Конфигурация базы данных
 def get_db_connection():
-    conn = sqlite3.connect(r'../database/db.sqlite3')
+    conn = sqlite3.connect(r'C:\Users\kotonai\Downloads\project\database\db.sqlite3')
     conn.row_factory = sqlite3.Row  # Для доступа к данным по имени столбца
     return conn
 
@@ -280,6 +292,7 @@ def admin_page():
         SELECT a.*, n.type_name
         FROM applications a
         LEFT JOIN notification_types n ON a.notification_type_id = n.id
+        ORDER BY processed asc;
     ''')
     applications = [dict(row) for row in cur.fetchall()]
 
@@ -324,6 +337,7 @@ def admin_page():
             s.start_date,
             s.end_date,
             p.price,
+            s.sale,
             s.receipt_path,
             sv.category
         FROM subscriptions s
@@ -339,12 +353,20 @@ def admin_page():
             "service_name": service_name,
             "start_date": start_date,
             "end_date": end_date,
-            "price": price,
+            "original_price": price,
+            "discount": sale if sale is not None else 0,  # Устанавливаем 0, если sale = None
+            "final_price": max(
+                price - (price * (sale if sale is not None else 0) / 100) 
+                if (sale if sale is not None else 0) < 100 
+                else price - (sale if sale is not None else 0), 
+                0
+            ),
             "category": category,
             "receipt_path": os.path.basename(receipt_path) if receipt_path else None
         }
-        for subscription_id, user_name, service_name, start_date, end_date, price, receipt_path, category in cur.fetchall()
+        for subscription_id, user_name, service_name, start_date, end_date, price, sale, receipt_path, category in cur.fetchall()
     ]
+
         # Получаем все услуги и их цены
     cur.execute('''
         SELECT s.id, s.name, s.base_price, p.price_type, p.price, p.duration
@@ -352,7 +374,6 @@ def admin_page():
         LEFT JOIN prices p ON s.id = p.service_id
     ''')
     rows = cur.fetchall()
-    conn.close()
 
     # Группируем цены по услугам
     servicesa = {}
@@ -386,6 +407,26 @@ def admin_page():
         grouped_applications=grouped_applications
     )
 
+@app.route('/admin/prices/get', methods=['GET'])
+def get_prices():
+    service_id = request.args.get('service_id')
+    duration = request.args.get('duration')
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute('''
+        SELECT price_type, price
+        FROM prices
+        WHERE service_id = ? AND duration = ?
+    ''', (service_id, duration))
+    result = cur.fetchone()
+    conn.close()
+
+    if result:
+        return jsonify({'price_type': result[0], 'price': result[1]})
+    else:
+        return jsonify({'price_type': '', 'price': ''})
 
 # Редактирование цен
 @app.route('/admin/prices/edit', methods=['POST'])
@@ -396,22 +437,38 @@ def update_price():
     service_id = request.form['service_id']
     price_type = request.form['price_type']
     price = request.form['price']
-    duration = request.form.get('duration', None)  # Длительность может быть пустой
+    duration = request.form['duration']
 
     try:
-        # Обновляем или добавляем цену
+        # Проверяем, существует ли запись
         cur.execute('''
-            INSERT OR REPLACE INTO prices (service_id, price_type, price, duration)
-            VALUES (?, ?, ?, ?)
-        ''', (service_id, price_type, price, duration))
-        conn.commit()
+            SELECT id FROM prices
+            WHERE service_id = ? AND duration = ?
+        ''', (service_id, duration))
+        record = cur.fetchone()
+
+        if record:
+            # Обновляем существующую запись
+            cur.execute('''
+                UPDATE prices
+                SET price_type = ?, price = ?
+                WHERE service_id = ? AND duration = ?
+            ''', (price_type, price, service_id, duration))
+            conn.commit()
+        else:
+            # Если запись не найдена, возвращаем ошибку
+            return "Запись для выбранного сервиса и периода не найдена.", 400
+
     except Exception as e:
         print(f"Ошибка: {e}")
         conn.rollback()
+        return "Ошибка при обновлении цены.", 500
+
     finally:
         conn.close()
 
     return redirect('/admin')
+
 
 # Загрузка Excel-файла
 @app.route('/admin/prices/upload', methods=['POST'])
@@ -447,8 +504,7 @@ def upload_prices():
 
     return redirect('/admin')
 
-# Скачивание шаблона Excel
-@app.route('/admin/prices/download')
+@app.route('/admin/prices/shablon')
 def download_template():
     conn = get_db_connection()
     cur = conn.cursor()
@@ -462,15 +518,17 @@ def download_template():
     df_services = pd.DataFrame(services, columns=['id', 'name', 'description', 'base_price', 'category'])
     df_prices = pd.DataFrame(prices, columns=['id', 'service_id', 'price_type', 'price', 'duration'])
 
-    # Создаем Excel в памяти
-    output = BytesIO()
-    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+    # Путь к файлу Excel
+    file_path = os.path.join(UPLOAD_FOLDER, 'prices_template.xlsx')
+
+    # Сохраняем DataFrame в Excel файл
+    with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
         df_services.to_excel(writer, sheet_name='Services', index=False)
         df_prices.to_excel(writer, sheet_name='Prices', index=False)
-    output.seek(0)
 
+    # Отправляем файл пользователю
     return send_file(
-        output,
+        file_path,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         download_name='prices_template.xlsx',
         as_attachment=True
@@ -661,6 +719,18 @@ def update_link():
         print("Ошибка базы данных:", str(e))
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route('/delete_user/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('DELETE FROM user_links WHERE user_id = ?', (user_id,))
+    cur.execute('DELETE FROM subscriptions WHERE user_id = ?', (user_id,))
+    cur.execute('DELETE FROM notifications WHERE user_id = ?', (user_id,))
+    cur.execute('DELETE FROM users WHERE user_id = ?', (user_id,))
+    conn.commit()
+    conn.close()
+    return redirect('/admin')
+
 @app.route('/send_notification', methods=['POST'])
 def send_notification():
     action = request.form.get('action')
@@ -703,57 +773,75 @@ def send_notification():
 def assign_subscription():
     user_id = request.form.get('user_id')
     service_id = request.form.get('service_id')
-    period = request.form.get('period')  # Получаем период как значение (0, 1, 6, 12)
+    period = request.form.get('period')
     start_date = request.form.get('start_date')
+    sale = request.form.get('sale', '0')  # По умолчанию 0
+
+    print(f"Получены данные: user_id={user_id}, service_id={service_id}, period={period}, start_date={start_date}, sale={sale}")
 
     if not user_id or not service_id or not period or not start_date:
+        print("Ошибка: отсутствуют обязательные поля")
         return "Missing required fields", 400
 
-    # Получение соответствующего price_id
+    try:
+        service_id = int(service_id)
+        period = int(period)
+        sale = float(sale)
+
+        if sale < 0:
+            raise ValueError("Скидка не может быть отрицательной")
+
+    except ValueError:
+        print(f"Ошибка: Некорректное значение скидки ({sale})")
+        return "Invalid discount value", 400
+
+    # Подключение к БД и получение цены
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('''
-        SELECT id, duration FROM prices
-        WHERE service_id = ? AND duration = ?
-    ''', (service_id, period))
+    cur.execute('SELECT id, price FROM prices WHERE service_id = ? AND duration = ?', (service_id, period))
     price_row = cur.fetchone()
+
     if not price_row:
+        print(f"Ошибка: Нет цены для service_id={service_id}, period={period}")
         return "Invalid service or period", 400
 
-    price_id, duration = price_row
+    price_id, price = price_row
 
-    # Вычисляем дату окончания
+    # Поддержка процентных и абсолютных скидок
+    if sale >= 100:  # Абсолютная скидка (например, 5000 KZT)
+        final_price = max(price - sale, 0)
+    else:  # Процентная скидка (например, 10%)
+        final_price = price - (price * sale / 100)
+
+    final_price = max(final_price, 0)  # Минимальная цена 0 KZT
+
+    # Вычисление даты окончания
     start_date_obj = datetime.strptime(start_date, '%Y-%m-%d')
-    if duration == 0:  # Одноразовый
-        end_date_obj = start_date_obj + timedelta(days=1)
-    else:
-        end_date_obj = start_date_obj + relativedelta(months=duration)
-
+    end_date_obj = start_date_obj + (timedelta(days=1) if period == 0 else relativedelta(months=period))
     end_date = end_date_obj.strftime('%Y-%m-%d')
 
-    # Проверка уникальности подписки
-    cur.execute('''
-        SELECT * FROM subscriptions
-        WHERE user_id = ? AND service_id = ? AND end_date >= DATE('now')
-    ''', (user_id, service_id))
+    # Проверка активной подписки
+    cur.execute('SELECT * FROM subscriptions WHERE user_id = ? AND service_id = ? AND end_date >= DATE("now")', (user_id, service_id))
     if cur.fetchone():
         return "User already has an active subscription for this service", 400
 
-    # Добавление подписки
+    # Запись в БД (без final_price, только price_id)
     try:
         cur.execute('''
-            INSERT INTO subscriptions (user_id, service_id, price_id, start_date, end_date, receipt_path,period)
-            VALUES (?, ?, ?, ?, ?, NULL,?)
-        ''', (user_id, service_id, price_id, start_date, end_date,period))
+            INSERT INTO subscriptions (user_id, service_id, price_id, start_date, end_date, period, sale)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (user_id, service_id, price_id, start_date, end_date, period, sale))
         conn.commit()
     except Exception as e:
+        print(f"Ошибка БД: {e}")
         return f"Database error: {e}", 500
     finally:
         conn.close()
 
     return redirect('/admin')
 
-@app.route('/get_price')
+
+@app.route('/get_price', methods=['GET'])
 def get_price():
     try:
         conn = get_db_connection()
@@ -923,6 +1011,49 @@ def upload_receipt(subscription_id):
         app.logger.error(f"Ошибка: {str(e)}")
         return jsonify({'message': f'Ошибка сервера: {str(e)}'}), 500
 
+@app.route("/reset_password", methods=['POST'])
+def reset_password():
+    email = request.form.get('email')
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT user_id FROM users WHERE email = ?', (email,))
+    user = cursor.fetchone()
+
+    if user is None:
+        return "User not found"
+
+    token = secrets.token_urlsafe(32)
+    cursor.execute('UPDATE users SET reset_token = ? WHERE user_id = ?', (token, user['user_id']))
+    conn.commit()
+    conn.close()
+
+    reset_link = url_for('reset_password_token', token=token, _external=True)
+    msg = Message("Password Reset", sender=app.config['MAIL_USERNAME'], recipients=[email])
+    msg.body = f"Нажмите на ссылку для сброса пароля: {reset_link}"
+    mail.send(msg)
+
+    flash("Ссылка для сброса пароля отправлена на email")  # Flash работает, но не в JSON
+    return jsonify({"message": "Password reset email sent"}), 200
+
+@app.route("/reset_password/<token>", methods=['GET', 'POST'])
+def reset_password_token(token):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT user_id FROM users WHERE reset_token = ?', (token,))
+    user = cursor.fetchone()
+
+    if user is None:
+        return "Invalid or expired token"
+
+    if request.method == 'POST':
+        new_password = request.form.get('password')
+        hashed_password = generate_password_hash(new_password)
+        cursor.execute('UPDATE users SET password = ?, reset_token = NULL WHERE user_id = ?', (hashed_password, user['user_id']))
+        conn.commit()
+        conn.close()
+        return redirect('/')
+
+    return render_template('reset.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=5000)

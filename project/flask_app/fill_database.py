@@ -1,26 +1,19 @@
 import sqlite3
 
 # Путь к вашей базе данных
-db_path = r'../database/db.sqlite3'
+db_path = r'C:\Users\kotonai\Downloads\project\database\db.sqlite3'
 
 # Подключение к базе данных
 conn = sqlite3.connect(db_path)
-cursor = conn.cursor()
+conn.row_factory = sqlite3.Row  # Устанавливаем формат строк как словарь
+cur = conn.cursor()
 
-cursor.execute('''CREATE TABLE subscriptions (
-                subscription_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                service_id INTEGER NOT NULL,
-                price_id INTEGER NOT NULL,
-                start_date DATE NOT NULL,
-                end_date DATE NOT NULL,
-                period INTEGER NOT NULL,
-                receipt_path TEXT,
-                FOREIGN KEY (service_id) REFERENCES services(id),
-                FOREIGN KEY (user_id) REFERENCES users(user_id),
-                FOREIGN KEY (price_id) REFERENCES prices(id)
-            )''')
+# Выполняем запрос
+cur.execute('''ALTER TABLE subscriptions ADD COLUMN final_price REAL;
+ALTER TABLE subscriptions ADD COLUMN sale REAL;
 
-conn.commit()
+''')
+rows = cur.fetchall()
 
+# Закрываем соединение
 conn.close()

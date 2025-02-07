@@ -349,6 +349,20 @@ section {
     background-color: green;
 }
 
+
+#linkForm .btn-deletes {
+    background-color: #f44336;
+    color: #ffffff;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#linkForm .btn-deletes:hover {
+    background-color: #e53935;
+}
+
 .modal {
     display: none;
     position: fixed;

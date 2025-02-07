@@ -35,9 +35,9 @@
     <h2>Оставить заявку</h2>
     <div class="form-container">
         <form class="form" method="POST" action="/submit_application">
-            <input type="text" name="name" placeholder="Ваше имя" required>
-            <input type="tel" name="phone" placeholder="Ваш телефон" required>
-            <textarea id="comment-field" name="comment" placeholder="Комментарий" required></textarea>
+            <input type="text" name="name" placeholder="Ваше имя" required aria-label="Ваше имя">
+            <input type="tel" name="phone" placeholder="Ваш телефон" required aria-label="Ваш телефон">
+            <textarea id="comment-field" name="comment" placeholder="Комментарий" required aria-label="Комментарий"></textarea>
 
             <!-- Скрытое поле для notification_type_id -->
             <input type="hidden" id="notification-type-id" name="notification_type_id" value="1">
@@ -48,8 +48,7 @@
 </section>
 
 <script>
-<section class="contact-form" id="contact">
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const urlParams = new URLSearchParams(window.location.search);
         const service = urlParams.get('service');
         const priceType = urlParams.get('price_type');
@@ -61,10 +60,15 @@
             commentField.value = `Выбранная конфигурация: ${decodeURIComponent(service)} (${decodeURIComponent(priceType)})`;
 
             // Прокрутка к полю комментария (опционально)
-            commentField.scrollIntoView({ behavior: 'smooth' });
+            if ('scrollBehavior' in document.documentElement.style) {
+                commentField.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                commentField.scrollIntoView();
+            }
         }
     });
 </script>
+
 
 <!-- Блок новостей -->
 <section class="news-block">

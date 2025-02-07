@@ -52,8 +52,8 @@
             <input type="password" name="password" placeholder="Пароль" required>
             <button type="submit">Войти</button>
         </form>
+        <button class="login-button" onclick="openModal('reset-modal'); closeModal('login-modal')">Забыл пароль</button>
         <button class="login-button" onclick="openModal('register-modal'); closeModal('login-modal')">Зарегистрировать</button>
-        <button class="login-button" onclick="openModal('too-register-modal'); closeModal('login-modal')">Регистрация организаций</button>
     </div>
 </div>
 
@@ -69,26 +69,53 @@
             <button type="submit">Зарегистрироваться</button>
         </form>
         <button class="login-button" onclick="openModal('login-modal'); closeModal('register-modal')">Вход</button>
-        <button class="login-button" onclick="openModal('too-register-modal'); closeModal('register-modal')">Регистрация организаций</button>
     </div>
 </div>
 
-<div id="too-register-modal" class="modal" style="display: none;">
+<div id="reset-modal" class="modal" style="display: none;">
     <div class="modal-content">
-        <span class="close" onclick="closeModal('too-register-modal')">&times;</span>
-        <h2>Регистрация организаций в разработке</h2>
-        <!-- Модальные окна<form method="POST" action="/register-too">
-            <input type="text" name="name" placeholder="Название" required>
+        <span class="close" onclick="closeModal('reset-modal')">&times;</span>
+        <p id="reset-message"></p>
+        <h2>Восстановление пароля</h2>
+        <form id="reset-form">
             <input type="email" name="email" placeholder="Email" required>
-            <input type="tel" name="phone" placeholder="Контактный телефон" required>
-            <button type="submit">Отправить заявку на одобрение</button>
-            <input type="hidden" id="notification-type-id" name="notification_type_id" value="3">
+            <button type="submit">Восстановить</button>
         </form>
-        -->
-        <button class="login-button" onclick="openModal('login-modal'); closeModal('too-register-modal')">Войти</button>
-        <button class="login-button" onclick="openModal('register-modal'); closeModal('too-register-modal')">Зарегистрироваться</button>
+        <button class="login-button" onclick="openModal('login-modal'); closeModal('reset-modal')">Вход</button>
     </div>
 </div>
+
+<script>
+    document.getElementById("reset-form").addEventListener("submit", async function(event) {
+        event.preventDefault();
+        let formData = new FormData(this);
+
+        try {
+            let response = await fetch("/reset_password", {
+                method: "POST",
+                body: formData,
+                headers: { "Accept": "application/json" }
+            });
+
+            let result = await response.json();
+            let message = document.getElementById("reset-message");
+
+            if (response.ok) {
+                message.textContent = result.message;
+                message.style.color = "green";
+            } else {
+                message.textContent = result.error || "Ошибка при отправке запроса";
+                message.style.color = "red";
+            }
+
+            message.style.display = "block";
+
+        } catch (error) {
+            console.error("Ошибка:", error);
+        }
+    });
+    </script>
+
 
 
 <script src="{{ url_for('static', filename='js/auth.js') }}"></script>

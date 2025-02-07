@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block extra_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/news.css') }}">
+{% endblock %}
+
+{% block title %}Сброс пароля{% endblock %}
+
+{% block content %}
+<section class="news-block">
+    <div class="reset">
+    <h2>Сброс пароля</h2>
+    <form method="POST">
+        <input class="input-field" type="password" name="password" placeholder="New Password" required>
+        <button class="submit-button" type="submit">Сбросить пароль</button>
+    </form>
+    </div>
+
+</section>
+
+{% endblock %}

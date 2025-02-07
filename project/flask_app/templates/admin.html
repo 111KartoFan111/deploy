@@ -74,108 +74,195 @@
 
     <!-- Prices Form -->
     <div id="pricesForm" style="display: none;" class="form-section">
-        <style>
-            table {
-                width: 100%;
-                border-collapse: collapse;
-            }
-            th, td {
-                border: 1px solid #ddd;
-                padding: 8px;
-            }
-            th {
-                background-color: #f2f2f2;
-            }
-            .modals {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                justify-content: center;
-                align-items: center;
-            }
-            .modals-content {
-                background: white;
-                padding: 20px;
-                border-radius: 5px;
-                width: 300px;
-            }
-            .close {
-                float: right;
-                cursor: pointer;
-            }
-        </style>
-        <h1>Управление ценами</h1>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 0;
+                    padding: 0;
+                }
+                .form-section {
+                    padding: 20px;
+                    background-color: #f9f9f9;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                    max-width: 1000px;
+                    margin: 20px auto;
+                    background: #fff;
+                }
+                h1 {
+                    font-size: 24px;
+                    color: #333;
+                    margin-bottom: 20px;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 20px;
+                }
+                th, td {
+                    border: 1px solid #ddd;
+                    padding: 10px;
+                    text-align: left;
+                }
+                th {
+                    background-color: #007bff;
+                    color: white;
+                    font-weight: bold;
+                }
+                td {
+                    background-color: #f8f9fa;
+                }
+                .edit-button {
+                    background-color: #28a745;
+                    color: white;
+                    padding: 10px 15px;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    transition: background-color 0.3s ease;
+                }
+                .edit-button:hover {
+                    background-color: #218838;
+                }
 
-        <!-- Таблица услуг -->
-        <table>
-            <thead>
-                <tr>
-                    <th>Услуга</th>
-                    <th>Цены</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for service in services %}
-                <tr>
-                    <td>{{ service.name }}</td>
-                    <td>
-                        {% for price in service.prices %}
-                            {{ price.price_type }}: {{ price.price }} ({{ price.duration }} мес)<br>
-                        {% endfor %}
-                    </td>
-                    <td>
-                        <button onclick="openModals({{ service.id }})">Редактировать</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <!-- Модальное окно для редактирования -->
-        <div id="editModal" class="modals">
-            <div class="modal-content">
-                <span class="close" onclick="closeModals()">&times;</span>
-                <h2>Редактировать цены</h2>
-                <form method="POST" action="/admin/prices/edit">
-                    <input type="hidden" name="service_id" id="serviceId">
-                    <label>Тип цены:</label>
-                    <input type="text" name="price_type" required><br>
-                    <label>Цена:</label>
-                    <input type="number" name="price" step="0.01" required><br>
-                    <label>Длительность (мин):</label>
-                    <input type="number" name="duration"><br>
-                    <button type="submit">Сохранить</button>
-                </form>
+                .modals {
+                    display: flex;
+                    position: fixed; /* Фиксированное позиционирование */
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    justify-content: center; /* Горизонтальное выравнивание */
+                    align-items: center; /* Вертикальное выравнивание */
+                    z-index: 1000;
+                }
+                .modals-content {
+                    background: white;
+                    padding: 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                    width: 400px;
+                    max-width: 90%;
+                    text-align: center;
+                }
 
-        <!-- Форма для загрузки Excel -->
-        <h2>Массовое обновление</h2>
-        <form method="POST" action="/admin/prices/upload" enctype="multipart/form-data">
-            <input type="file" name="excel_file" accept=".xlsx,.xls" required>
-            <button type="submit">Загрузить Excel</button>
-        </form>
-        <a href="/admin/prices/download" download>
-            <button class="download-button">Скачать шаблон</button>
-        </a>
+                .close {
+                    float: right;
+                    font-size: 18px;
+                    font-weight: bold;
+                    color: #000;
+                    cursor: pointer;
+                }
+
+                .close:hover {
+                    color: #ff0000;
+                }
+
+                .price-type {
+                    font-size: 14px;
+                    margin-bottom: 10px;
+                }
+            </style>
+
+            <h1>Управление ценами</h1>
+            <button onclick="openModals()" class="edit-button">Редактировать цены</button>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Услуга</th>
+                        <th>Цены</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for service in servicesa %}
+                    <tr>
+                        <td>{{ service.name }}</td>
+                        <td>
+                            {% for price in service.prices %}
+                                <span class="price-type">
+                                    {{ price.price_type }}:
+                                    <strong>{{ price.price }}</strong>
+                                    ({{ price.duration }} мес)
+                                </span><br>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+    </div>
+
+<!-- Модальное окно для редактирования -->
+    <div id="editModal" class="modals" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeModals()">&times;</span>
+            <h2>Редактировать цены</h2>
+
+            <form method="POST" action="/admin/prices/edit">
+                <label for="serviceSelect">Выберите сервис:</label>
+                <select id="serviceSelect" name="service_id" onchange="updatePriceFields()">
+                    <option value="" disabled selected>Выберите сервис</option>
+                    {% for service in services %}
+                        <option value="{{ service.id }}">{{ service.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <label for="periodSelect">Выберите период:</label>
+                <select id="periodSelect" name="duration" onchange="updatePriceFields()">
+                    <option value="" disabled selected>Выберите период</option>
+                    <option value="1">1 месяц</option>
+                    <option value="6">6 месяцев</option>
+                    <option value="12">12 месяцев</option>
+                </select>
+
+                <label for="priceType">Тип цены:</label>
+                <input type="text" id="priceType" name="price_type" placeholder="Введите тип цены" required>
+
+                <label for="price">Цена:</label>
+                <input type="number" id="price" name="price" step="0.01" placeholder="Введите новую цену" required>
+
+                <button type="submit">Сохранить</button>
+            </form>
+
+            <!-- Форма для загрузки Excel -->
+            <h2>Массовое обновление</h2>
+            <form method="POST" action="/admin/prices/upload" enctype="multipart/form-data">
+                <input type="file" name="excel_file" accept=".xlsx,.xls" required>
+                <button type="submit">Загрузить Excel</button>
+            </form>
+            <a href="/admin/prices/shablon" download>
+                <button class="download-button">Скачать шаблон</button>
+            </a>
         </div>
     </div>
-    
-        <script>
-            // Открытие модального окна
-            function openModals(serviceId) {
-                document.getElementById('serviceId').value = serviceId;
-                document.getElementById('editModal').style.display = 'flex';
+
+    <script>
+        function updatePriceFields() {
+            const serviceId = document.getElementById('serviceSelect').value;
+            const duration = document.getElementById('periodSelect').value;
+
+            if (serviceId && duration) {
+                fetch(`/admin/prices/get?service_id=${serviceId}&duration=${duration}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('priceType').value = data.price_type || '';
+                        document.getElementById('price').placeholder = data.price || 'Введите новую цену';
+                    })
+                    .catch(error => console.error('Ошибка при загрузке данных:', error));
             }
-    
-            // Закрытие модального окна
-            function closeModals() {
-                document.getElementById('editModal').style.display = 'none';
-            }
-        </script>
-    </div>
+        }
+
+        // Открытие модального окна
+        function openModals() {
+            document.getElementById('editModal').style.display = 'flex';
+        }
+        // Закрытие модального окна
+        function closeModals() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+    </script>
 
     <div id="applicationsForm" style="display: none;" class="form-section">
         <h2>Обработать заявки</h2>
@@ -248,7 +335,7 @@
             }
         }
     </style>
-    
+
     <!-- Подписки -->
     <div id="subscriptionsForm" style="display: none;" class="form-section">
         <h2>Управление подписками</h2>
@@ -258,6 +345,9 @@
                     <th>Пользователь</th>
                     <th>Сервис</th>
                     <th>Цена</th>
+                    <th>Скидка</th>
+                    <th>Итоговая цена (KZT)</th>
+                    <th>Дата начала</th>
                     <th>Дата окончания</th>
                     <th>Чек</th>
                     <th>Управление</th>
@@ -266,13 +356,16 @@
             <tbody>
                 {% for subscription in subscriptions %}
                 <tr>
-                    <td>{{ subscription['user_name'] }}</td>
-                    <td>{{ subscription['service_name'] }}</td>
-                    <td>{{ subscription['price'] }}</td>
-                    <td>{{ subscription['end_date'] }}</td>
+                    <td>{{ subscription.user_name }}</td>
+                    <td>{{ subscription.service_name }}</td>
+                    <td>{{ '%.2f' % subscription.original_price }}</td>
+                    <td>{{ '%.2f' % (subscription.discount if subscription.discount is not none else 0) }}</td>
+                    <td><b>{{ '%.2f' % (subscription.final_price if subscription.final_price is not none else subscription.original_price) }}</b></td>
+                    <td>{{ subscription.start_date }}</td>
+                    <td>{{ subscription.end_date }}</td>
                     <td>
-                        {% if subscription['receipt_path'] %}
-                            <a href="{{ url_for('download_file', filename = subscription.receipt_path) }}" target="_blank">Просмотреть чек</a>
+                        {% if subscription.receipt_path %}
+                            <a href="{{ url_for('download_file', filename=subscription.receipt_path) }}" target="_blank">Просмотреть чек</a>
                         {% else %}
                             Чек не загружен
                         {% endif %}
@@ -349,7 +442,11 @@
                 </select>
                 <!-- Поле для отображения цены -->
                 <label for="price">Цена:</label>
-                <input type="text" id="price" name="price" readonly>
+                <input type="text" id="priceWithCurrency" name="price" readonly>
+
+                <label for="sale">Скидка:</label>
+                <input type="text" id="pricesale" name="sale">
+
                 <!-- Выбор даты начала подписки -->
                 <label for="start_date">Дата начала:</label>
                 <input type="date" id="start_date" name="start_date" required onchange="updateEndDate()">
@@ -361,55 +458,73 @@
             </form>
         </div>
         <script>
-            // Обновление даты окончания
-            function updateEndDate() {
-                const startDate = document.getElementById('start_date').value;
-                const period = document.getElementById('period').value;
-                const endDateField = document.getElementById('end_date');
-                if (!startDate || !period) {
-                    endDateField.value = '';
-                    return;
-                }
-                const start = new Date(startDate);
-                if (period === "0") { // Одноразовый
-                    start.setDate(start.getDate() + 1);
-                } else { // Для периодов: месяцы
-                    start.setMonth(start.getMonth() + parseInt(period, 10));
-                }
-                // Форматируем дату в формате YYYY-MM-DD
-                const endDate = start.toISOString().split('T')[0];
-                endDateField.value = endDate;
-            }
-            // Обновление цены
-            async function updatePrice() {
-                const serviceId = document.getElementById('service_id').value;
-                const period = document.getElementById('period').value;
-                // Проверяем, выбраны ли оба параметра
-                if (!serviceId || !period) {
-                    document.getElementById('price').value = 'Выберите услугу и период';
-                    return;
-                }
-                try {
-                    const response = await fetch(`/get_price?service_id=${serviceId}&period=${period}`);
-                    const data = await response.json();
-                    if (data.success) {
-                        document.getElementById('price').value = `${data.price.toFixed(2)} KZT`;
-                    } else {
-                        document.getElementById('price').value = 'Цена не найдена';
-                    }
-                } catch (error) {
-                    console.error('Ошибка загрузки цены:', error);
-                    alert('Ошибка при загрузке цены. Попробуйте снова.');
-                }
-            }
-            // Назначаем события на изменение
-            document.getElementById('service_id').addEventListener('change', updatePrice);
-            document.getElementById('period').addEventListener('change', updatePrice);
+// Обновление цены и периода
+async function updatePriceAndPeriod() {
+    const serviceId = document.getElementById('service_id').value;
+    const period = document.getElementById('period').value;
+    const priceField = document.getElementById('priceWithCurrency');
 
-            // Блокировка кнопки после отправки формы
-            document.querySelector('form').addEventListener('submit', function () {
-                this.querySelector('button[type="submit"]').disabled = true;
-            });
+    // Проверка, что оба параметра выбраны
+    if (!serviceId || !period) {
+        priceField.value = 'Выберите услугу и период';
+        return;
+    }
+
+    try {
+        // Запрос к серверу для получения цены
+        const response = await fetch(`/get_price?service_id=${serviceId}&period=${period}`);
+
+        if (!response.ok) {
+            throw new Error(`Ошибка сервера: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Устанавливаем только числовое значение в поле для ввода
+            priceField.value = `${data.price.toFixed(2)}`;
+
+            // Если хотите, можете добавить "KZT" в другой элемент, например, в span
+            document.getElementById('priceWithCurrency').textContent = `${data.price.toFixed(2)} KZT`;
+        } else {
+            priceField.value = 'Цена не найдена';
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки цены:', error);
+        priceField.value = 'Ошибка при загрузке цены';
+    }
+
+    // Обновление даты окончания
+    updateEndDate();
+}
+
+// Обновление даты окончания на основе выбранных параметров
+function updateEndDate() {
+    const startDate = document.getElementById('start_date').value;
+    const period = document.getElementById('period').value;
+    const endDateField = document.getElementById('end_date');
+
+    if (!startDate || !period) {
+        endDateField.value = '';
+        return;
+    }
+
+    const start = new Date(startDate);
+    if (period === "0") { // Одноразовый
+        start.setDate(start.getDate() + 1);
+    } else { // Для периодов: месяцы
+        start.setMonth(start.getMonth() + parseInt(period, 10));
+    }
+
+    // Форматируем дату в формате YYYY-MM-DD
+    const endDate = start.toISOString().split('T')[0];
+    endDateField.value = endDate;
+}
+
+// Назначаем события на изменение полей
+document.getElementById('service_id').addEventListener('change', updatePriceAndPeriod);
+document.getElementById('period').addEventListener('change', updatePriceAndPeriod);
+
         </script>
     </div>
 
@@ -453,6 +568,9 @@
                         <i class="fas fa-plus"></i> Добавить
                     </button>
                     <button class="btn-action" onclick="showAttachmentForm()">Уведомление</button>
+                    <button class="btn-action" onclick="DeleteUserForm({{ user.user_id }})">
+                        <i class="fas fa-trash"></i> Удалить
+                    </button>
                 </td>
             </tr>
             {% endfor %}
@@ -463,9 +581,6 @@
         <p>Нет зарегистрированных пользователей</p>
     </div>
     {% endif %}
-
-
-
 
 <!-- Модальное окно всех ссылок -->
 <div id="allLinksModal" class="modal">
@@ -482,7 +597,6 @@
                     </tr>
                 </thead>
                 <tbody id="allLinksList">
-                    <!-- Данные будут загружены через JS -->
                 </tbody>
             </table>
         </div>
@@ -507,10 +621,8 @@
     </div>
 </div>
 
-
 <script>
 // Функция показа всех ссылок
-
 function showAllLinks(userId) {
     fetch(`/get_user_links?userId=${userId}`)
         .then(response => response.json())
@@ -543,7 +655,6 @@ function showAllLinks(userId) {
         });
 }
 
-
 // Функция скрытия модального окна
 function hideAllLinks() {
     document.getElementById("allLinksModal").style.display = "none";
@@ -560,6 +671,7 @@ function filterLinks() {
         row.style.display = text.includes(filter) ? '' : 'none';
     });
 }
+
 function deleteLink(linkId) {
     if (confirm('Вы уверены, что хотите удалить эту ссылку?')) {
         fetch(`/delete_link/${linkId}`, {
@@ -579,6 +691,7 @@ function deleteLink(linkId) {
         });
     }
 }
+
 function editLink(linkId) {
     // Загружаем данные ссылки для редактирования
     fetch(`/get_link/${linkId}`)
@@ -590,7 +703,7 @@ function editLink(linkId) {
             document.getElementById('editLinkUrl').value = data.link;
 
             // Показываем модальное окно редактирования
-            document.getElementById("editLinkModal").style.display = "block";
+                document.getElementById("editLinkModal").style.display = "block";
         })
         .catch(error => {
             console.error('Ошибка:', error);
@@ -629,11 +742,27 @@ function saveEditedLink() {
 function hideEditLinkModal() {
     document.getElementById("editLinkModal").style.display = "none";
 }
+
+function DeleteUserForm(userId) {
+    if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+        fetch(`/delete_user/${userId}`, {
+            method: 'DELETE',
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Пользователь успешно удален');
+                location.reload();
+            } else {
+                alert('Не удалось удалить пользователя');
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+        });
+    }
+}
 </script>
-
-
-
-
 
 <!-- Форма добавления ссылки -->
 <div id="addLinkModal" class="modal">

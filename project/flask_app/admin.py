@@ -1,7 +1,7 @@
 import sqlite3
 
 # Укажите путь к вашей базе данных
-DB_PATH = r'../database/db.sqlite3'
+DB_PATH = r'C:\Users\kotonai\Downloads\project\database\db.sqlite3'
 
 def assign_admin(full_name):
     try:
